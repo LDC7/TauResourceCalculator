@@ -1,0 +1,48 @@
+﻿@inherits LayoutComponentBase
+
+<MudThemeProvider IsDarkMode="@this.isDarkMode" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudLayout>
+  <MudAppBar Elevation="1">
+    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@this.DrawerToggle" />
+    <MudText Typo="Typo.h5" Class="ml-3">Application</MudText>
+    <MudSpacer />
+    <MudIconButton Icon="@this.DarkLightModeButtonIcon" Color="Color.Inherit" OnClick="@this.DarkModeToggle" />
+  </MudAppBar>
+  <MudDrawer @bind-Open="@this.isDrawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+    <NavMenu />
+  </MudDrawer>
+  <MudMainContent Class="mt-16 pa-4">
+    @this.Body
+  </MudMainContent>
+</MudLayout>
+
+
+<div id="blazor-error-ui">
+  An unhandled error has occurred.
+  <a href="" class="reload">Reload</a>
+  <a class="dismiss">🗙</a>
+</div>
+
+@code {
+  private bool isDrawerOpen = true;
+  private bool isDarkMode = true;
+
+  private void DrawerToggle(MouseEventArgs args)
+  {
+    this.isDrawerOpen = !this.isDrawerOpen;
+  }
+
+  private void DarkModeToggle()
+  {
+    this.isDarkMode = !this.isDarkMode;
+  }
+
+  public string DarkLightModeButtonIcon => this.isDarkMode switch
+  {
+    true => Icons.Material.Rounded.AutoMode,
+    false => Icons.Material.Outlined.DarkMode,
+  };
+}
