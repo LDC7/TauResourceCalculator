@@ -11,7 +11,7 @@ using TauResourceCalculator.BlazorServer.Data.SQLite;
 namespace TauResourceCalculator.BlazorServer.Data.SQLite.Migrations
 {
     [DbContext(typeof(ApplicationSQLiteDbContext))]
-    [Migration("20240727150611_Initial")]
+    [Migration("20240727154118_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
