@@ -11,4 +11,4 @@ $migrationName = Read-Host "Введите имя миграции:"
 $outputPath = "./Data/" + $dbContextType + "/Migrations/"
 $namespace = "TauResourceCalculator.BlazorServer.Data." + $dbContextType + ".Migrations"
 
-dotnet ef migrations add $migrationName -o $outputPath -n $namespace -p $projectPath -s $projectPath
+dotnet ef migrations add $migrationName -o $outputPath -n $namespace -p $projectPath -s $projectPath -c $dbContextName
