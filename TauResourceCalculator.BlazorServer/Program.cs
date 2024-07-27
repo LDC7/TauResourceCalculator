@@ -3,12 +3,15 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
 using TauResourceCalculator.BlazorServer.Components;
+using TauResourceCalculator.BlazorServer.Data;
+using TauResourceCalculator.BlazorServer.Extensions;
 using TauResourceCalculator.BlazorServer.Settings;
 
 namespace TauResourceCalculator.BlazorServer;
@@ -19,8 +22,6 @@ public sealed class Program
 
   public static async Task Main(string[] args)
   {
-    args ??= [];
-
     Directory.SetCurrentDirectory(CurrentDirectory);
     var webApplicationOptions = new WebApplicationOptions()
     {
@@ -52,6 +53,9 @@ public sealed class Program
     var appConfigSection = configuration.GetSection("App");
     builder.Services.Configure<ApplicationSettings>(appConfigSection);
 
+    builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+    builder.AddApplicationDbContext();
+
     var app = builder.Build();
 
     if (!app.Environment.IsDevelopment())
@@ -65,6 +69,15 @@ public sealed class Program
     app
       .MapRazorComponents<App>()
       .AddInteractiveServerRenderMode();
+
+    await using (var scope = app.Services.CreateAsyncScope())
+    {
+      var scopeServiceProvider = scope.ServiceProvider;
+      await using (var context = scopeServiceProvider.GetRequiredService<ApplicationDbContext>())
+      {
+        await context.Database.MigrateAsync();
+      }
+    }
 
     await app.RunAsync();
   }
