@@ -11,5 +11,16 @@ internal sealed class TeamEntityConfiguration : IEntityTypeConfiguration<Team>
     builder
       .HasMany(e => e.Members)
       .WithOne(e => e.Team);
+
+    builder
+      .OwnsMany(e => e.ResourceSubstractionsPerDay, substractionBuilder =>
+      {
+        substractionBuilder
+          .WithOwner()
+            .HasForeignKey(s => s.TeamId);
+
+        substractionBuilder
+          .HasKey(s => new { s.TeamId, s.Day });
+      });
   }
 }

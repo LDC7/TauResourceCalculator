@@ -1,0 +1,101 @@
+﻿@page "/projects"
+
+@using Microsoft.EntityFrameworkCore
+@using TauResourceCalculator.BlazorServer.Components.Dialogs
+@using TauResourceCalculator.BlazorServer.Data
+@using TauResourceCalculator.BlazorServer.Models
+
+@inject ApplicationDbContext DbContext
+@inject IDialogService DialogService
+
+<PageTitle>Проекты</PageTitle>
+
+@if (this.projects == null)
+{
+  <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+}
+else
+{
+  <MudButton Href="/projects/create" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Create">
+    Создать
+  </MudButton>
+  <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Create" OnClick="this.HandleCreateForTeamButton">
+    Создать для команды
+  </MudButton>
+  <MudTable Items="@this.projects" Hover="true" Elevation="0" AllowUnsorted="true">
+    <ColGroup>
+      <col />
+      <col style="width: 55px;" />
+    </ColGroup>
+    <HeaderContent>
+      <MudTh>
+        Name
+      </MudTh>
+      <MudTh />
+    </HeaderContent>
+    <RowTemplate>
+      <MudTd DataLabel="@nameof(Project.Name)">
+        <MudLink Href="@this.GetProjectCardLink(context)">
+          @context.ToString()
+        </MudLink>
+      </MudTd>
+      <MudTd>
+        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                       Variant="Variant.Filled"
+                       Color="Color.Error" Size="Size.Small"
+                       OnClick="() => this.HandleDeleteButtonClick(context)" />
+      </MudTd>
+    </RowTemplate>
+    <PagerContent>
+      <MudTablePager PageSizeOptions="new int[] { 50, 100 }" />
+    </PagerContent>
+  </MudTable>
+}
+
+@code {
+  private ICollection<Project>? projects;
+
+  protected override async Task OnInitializedAsync()
+  {
+    this.projects = await this.DbContext.Projects.OrderByDescending(p => p.Created).ToListAsync();
+    await base.OnInitializedAsync();
+  }
+
+  private string GetProjectCardLink(Project project)
+  {
+    return $"/projects/{project.Id:N}";
+  }
+
+  private async Task HandleDeleteButtonClick(Project project)
+  {
+    this.DbContext.Projects.Remove(project);
+    await this.DbContext.SaveChangesAsync();
+    this.projects?.Remove(project);
+  }
+
+  private async Task HandleCreateForTeamButton()
+  {
+    var createDialogRef = await this.DialogService.ShowAsync<CreateProjectForTeamDialog>();
+    _ = createDialogRef.Result.ContinueWith(async t =>
+    {
+      if (t.Result?.Data is CreateProjectForTeamDialog.Data dialogData)
+      {
+        var project = new Project()
+          {
+            Name = dialogData.Team!.Name,
+            Version = dialogData.Version!
+          };
+
+        foreach (var sprint in dialogData.Sprints)
+        {
+          sprint.Project = project;
+          project.Sprints.Add(sprint);
+        }
+
+        await this.DbContext.Projects.AddAsync(project);
+        await this.DbContext.SaveChangesAsync();
+        this.projects?.Add(project);
+      }
+    });
+  }
+}

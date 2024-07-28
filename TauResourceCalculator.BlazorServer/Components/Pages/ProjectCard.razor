@@ -1,0 +1,124 @@
+﻿@page "/projects/create"
+@page "/projects/{Id}"
+
+@using Microsoft.EntityFrameworkCore
+@using TauResourceCalculator.BlazorServer.Data
+@using TauResourceCalculator.BlazorServer.Extensions
+@using TauResourceCalculator.BlazorServer.Models
+
+@inject ApplicationDbContext DbContext
+
+<PageTitle>@this.PageTitle</PageTitle>
+
+@if (this.project == null)
+{
+  <MudCard>
+    <MudCardHeader>
+      Project @this.Id not found
+    </MudCardHeader>
+  </MudCard>
+}
+else
+{
+  <MudCard>
+    <MudCardContent>
+      <MudForm Model="this.project" @ref="this.projectFormRef">
+        <MudTextField @bind-Value="this.project.Name"
+                      Typo="Typo.h5"
+                      Required="true" Label="@nameof(Team.Name)"
+                      Margin="Margin.Dense"
+                      Variant="Variant.Text" />
+        <br />
+        <MudText>Спринты:</MudText>
+        <MudFab Color="Color.Primary"
+                Size="Size.Medium"
+                StartIcon="@Icons.Material.Filled.Add"
+                OnClick="@this.HandleAddSprintButtonClick" />
+        <MudTable Items="@this.project.Sprints" Hover="true" Elevation="0" AllowUnsorted="true">
+          <ColGroup>
+            <col />
+            <col style="width: 200px;" />
+            <col style="width: 200px;" />
+            <col style="width: 55px;" />
+          </ColGroup>
+          <HeaderContent>
+            <MudTh>
+              Имя
+            </MudTh>
+            <MudTh>
+              Начало
+            </MudTh>
+            <MudTh>
+              Конец
+            </MudTh>
+            <MudTh />
+          </HeaderContent>
+          <RowTemplate>
+            <MudTd DataLabel="@nameof(Sprint.Name)">
+              <MudLink Href="@this.GetSprintCardLink(context)">
+                @context.Name
+              </MudLink>
+            </MudTd>
+            <MudTd DataLabel="@nameof(Sprint.Start)">
+              @context.Start
+            </MudTd>
+            <MudTd DataLabel="@nameof(Sprint.End)">
+              @context.End
+            </MudTd>
+            <MudTd>
+              <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                             Variant="Variant.Filled"
+                             Color="Color.Error"
+                             Size="Size.Small"
+                             OnClick="() => this.HandleDeleteSprintButtonClick(context)" />
+            </MudTd>
+          </RowTemplate>
+        </MudTable>
+      </MudForm>
+    </MudCardContent>
+  </MudCard>
+}
+
+@code {
+  private MudForm projectFormRef = null!;
+  private Project? project;
+
+  private string PageTitle => this.project?.ToString() ?? "Проект";
+
+  [Parameter]
+  public string? Id { get; set; }
+
+  protected override async Task OnInitializedAsync()
+  {
+    if (this.Id is null)
+    {
+      this.project = new Project() { Name = "Project", Version = "42" };
+      var entity = await this.DbContext.Projects.AddAsync(this.project!);
+      this.Id = entity.Entity.Id.ToString();
+      await this.DbContext.SaveChangesAsync();
+    }
+    else if (Guid.TryParse(this.Id, out var id))
+    {
+      this.project = await this.DbContext.Projects.Include(t => t.Sprints).FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    await base.OnInitializedAsync();
+  }
+
+  private string GetSprintCardLink(Sprint sprint)
+  {
+    return $"/sprints/{sprint.Id:N}";
+  }
+
+  private async Task HandleAddSprintButtonClick()
+  {
+    this.project?.Sprints.Add(new Sprint() { Name = "Iteration ", Project = this.project });
+    await this.DbContext.SaveChangesAsync();
+  }
+
+  private async Task HandleDeleteSprintButtonClick(Sprint sprint)
+  {
+    this.project?.Sprints.Remove(sprint);
+    await this.DbContext.SaveChangesAsync();
+  }
+}

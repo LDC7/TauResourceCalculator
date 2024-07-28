@@ -1,0 +1,73 @@
+﻿@page "/teams"
+
+@using Microsoft.EntityFrameworkCore
+@using TauResourceCalculator.BlazorServer.Data
+@using TauResourceCalculator.BlazorServer.Models
+
+@inject ApplicationDbContext DbContext
+
+<PageTitle>Команды</PageTitle>
+
+@if (this.teams == null)
+{
+  <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+}
+else
+{
+  <MudButton Href="/teams/create" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Create">
+    Создать
+  </MudButton>
+  <MudTable Items="@this.teams" Hover="true" SortLabel="Sort By" Elevation="0" AllowUnsorted="false">
+    <ColGroup>
+      <col />
+      <col style="width: 55px;" />
+    </ColGroup>
+    <HeaderContent>
+      <MudTh>
+        <MudTableSortLabel InitialDirection="SortDirection.Ascending"
+                           SortBy="new Func<Team, object>(t => t.Name)">
+          Name
+        </MudTableSortLabel>
+      </MudTh>
+      <MudTh />
+    </HeaderContent>
+    <RowTemplate>
+      <MudTd DataLabel="Name">
+        <MudLink Href="@this.GetTeamCardLink(context)">
+          @context.Name
+        </MudLink>
+      </MudTd>
+      <MudTd>
+        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                       Variant="Variant.Filled"
+                       Color="Color.Error" Size="Size.Small"
+                       OnClick="() => this.HandleDeleteButtonClick(context)" />
+      </MudTd>
+    </RowTemplate>
+    <PagerContent>
+      <MudTablePager PageSizeOptions="new int[] { 50, 100 }" />
+    </PagerContent>
+  </MudTable>
+}
+
+@code {
+  private ICollection<Team>? teams;
+
+  protected override async Task OnInitializedAsync()
+  {
+    this.teams = await this.DbContext.Teams.ToListAsync();
+    await base.OnInitializedAsync();
+  }
+
+  private string GetTeamCardLink(Team team)
+  {
+    return $"/teams/{team.Id:N}";
+  }
+
+  private async Task HandleDeleteButtonClick(Team team)
+  {
+    this.DbContext.Teams.Remove(team);
+    await this.DbContext.SaveChangesAsync();
+    this.teams?.Remove(team);
+  }
+}

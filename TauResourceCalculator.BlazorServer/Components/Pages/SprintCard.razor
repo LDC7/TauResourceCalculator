@@ -1,0 +1,41 @@
+﻿@page "/sprints/{Id}"
+
+@using Microsoft.EntityFrameworkCore
+@using TauResourceCalculator.BlazorServer.Data
+@using TauResourceCalculator.BlazorServer.Models
+
+@inject ApplicationDbContext DbContext
+
+<PageTitle>@this.PageTitle</PageTitle>
+
+@if (this.sprint == null)
+{
+  <MudCard>
+    <MudCardHeader>
+      Sprint @this.Id not found
+    </MudCardHeader>
+  </MudCard>
+}
+else
+{
+  
+}
+
+@code {
+  private Sprint? sprint;
+
+  private string PageTitle => this.sprint?.Name ?? "Спринт";
+
+  [Parameter]
+  public string? Id { get; set; }
+
+  protected override async Task OnInitializedAsync()
+  {
+    if (Guid.TryParse(this.Id, out var id))
+    {
+      this.sprint = await this.DbContext.Sprints.FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    await base.OnInitializedAsync();
+  }
+}

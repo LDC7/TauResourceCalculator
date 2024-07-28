@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -60,7 +60,7 @@ public sealed class Program
 
     if (!app.Environment.IsDevelopment())
     {
-      app.UseExceptionHandler("/Error");
+      app.UseExceptionHandler("/Error", createScopeForErrors: true);
     }
 
     app.UseStaticFiles();
@@ -72,8 +72,7 @@ public sealed class Program
 
     await using (var scope = app.Services.CreateAsyncScope())
     {
-      var scopeServiceProvider = scope.ServiceProvider;
-      await using (var context = scopeServiceProvider.GetRequiredService<ApplicationDbContext>())
+      await using (var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>())
       {
         await context.Database.MigrateAsync();
       }

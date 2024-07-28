@@ -1,0 +1,171 @@
+﻿@page "/teams/create"
+@page "/teams/{Id}"
+
+@using Microsoft.EntityFrameworkCore
+@using TauResourceCalculator.BlazorServer.Data
+@using TauResourceCalculator.BlazorServer.Extensions
+@using TauResourceCalculator.BlazorServer.Models
+
+@inject ApplicationDbContext DbContext
+
+<PageTitle>@this.PageTitle</PageTitle>
+
+@if (this.team == null)
+{
+  <MudCard>
+    <MudCardHeader>
+      Team @this.Id not found
+    </MudCardHeader>
+  </MudCard>
+}
+else
+{
+  <MudCard>
+    <MudCardContent>
+      <MudForm Model="this.team" @ref="this.teamFormRef">
+        <MudTextField @bind-Value="this.team.Name"
+                      Typo="Typo.h5"
+                      Required="true" Label="@nameof(Team.Name)"
+                      Margin="Margin.Dense"
+                      Variant="Variant.Text" />
+        <br />
+        <MudText>Члены команды:</MudText>
+        <MudFab Color="Color.Primary"
+                Size="Size.Medium"
+                StartIcon="@Icons.Material.Filled.Add"
+                OnClick="@this.HandleAddMemberButtonClick" />
+        <MudTable Items="@this.team.Members" Hover="true" Elevation="0" AllowUnsorted="true">
+          <ColGroup>
+            <col />
+            <col style="width: 250px;" />
+            <col style="width: 100px;" />
+            <col style="width: 55px;" />
+          </ColGroup>
+          <HeaderContent>
+            <MudTh>
+              Имя
+            </MudTh>
+            <MudTh>
+              Ресурс
+            </MudTh>
+            <MudTh />
+            <MudTh />
+          </HeaderContent>
+          <RowTemplate>
+            <MudTd DataLabel="@nameof(Member.Name)">
+              <MudTextField @bind-Value="context.Name"
+                            Required="true"
+                            Label="@nameof(Member.Name)"
+                            Margin="Margin.Dense"
+                            Variant="Variant.Text" />
+            </MudTd>
+            <MudTd DataLabel="@nameof(Member.ResourceType)">
+              <MudSelect @bind-Value="context.ResourceType"
+                         T="ResourceType"
+                         Label="@nameof(Member.ResourceType)"
+                         AnchorOrigin="Origin.BottomCenter">
+                <MudSelectItem Value="@ResourceType.Developing" />
+                <MudSelectItem Value="@ResourceType.Testing" />
+              </MudSelect>
+            </MudTd>
+            <MudTd DataLabel="@nameof(Member.Resource)">
+              <MudNumericField @bind-Value="context.Resource"
+                               Required="true"
+                               Label="@nameof(Member.Resource)"
+                               Margin="Margin.Dense"
+                               Min="0.0" />
+            </MudTd>
+            <MudTd>
+              <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                             Variant="Variant.Filled"
+                             Color="Color.Error"
+                             Size="Size.Small"
+                             OnClick="() => this.HandleDeleteMemberButtonClick(context)" />
+            </MudTd>
+          </RowTemplate>
+        </MudTable>
+        <br />
+        <MudText>Вычеты за день недели:</MudText>
+        <MudTable Items="@this.team.ResourceSubstractionsPerDay" Hover="true" Elevation="0" AllowUnsorted="true">
+          <ColGroup>
+            <col style="width: 150px;" />
+            <col style="width: 80px;" />
+          </ColGroup>
+          <HeaderContent>
+            <MudTh>
+              День
+            </MudTh>
+            <MudTh>
+              Ресурс
+            </MudTh>
+          </HeaderContent>
+          <RowTemplate>
+            <MudTd DataLabel="@nameof(DayOfWeekResourceSubstraction.Day)">
+              @context.Day.ToString()
+            </MudTd>
+            <MudTd DataLabel="@nameof(DayOfWeekResourceSubstraction.Resource)">
+              <MudNumericField @bind-Value="context.Resource"
+                               Required="true"
+                               Margin="Margin.Dense" />
+            </MudTd>
+          </RowTemplate>
+        </MudTable>
+      </MudForm>
+    </MudCardContent>
+  </MudCard>
+  <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" OnClick="this.HandleSaveButtonClick">
+    Сохранить
+  </MudButton>
+}
+
+@code {
+  private MudForm teamFormRef = null!;
+  private Team? team;
+
+  private string PageTitle => this.team?.Name ?? "Команда";
+
+  [Parameter]
+  public string? Id { get; set; }
+
+  protected override async Task OnInitializedAsync()
+  {
+    if (this.Id is null)
+    {
+      this.team = new Team() { Name = "Team" };
+      this.team.FillTeamWithSubstractions();
+    }
+    else if (Guid.TryParse(this.Id, out var id))
+    {
+      this.team = await this.DbContext.Teams.Include(t => t.Members).FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    await base.OnInitializedAsync();
+  }
+
+  private Task HandleAddMemberButtonClick()
+  {
+    this.team?.Members.Add(new Member() { Name = "Member", Team = this.team });
+    return Task.CompletedTask;
+  }
+
+  private Task HandleDeleteMemberButtonClick(Member member)
+  {
+    this.team?.Members.Remove(member);
+    return Task.CompletedTask;
+  }
+
+  private async Task HandleSaveButtonClick()
+  {
+    await this.teamFormRef.Validate();
+    if (this.teamFormRef.Errors.Length > 0)
+      return;
+
+    if (this.Id is null)
+    {
+      var entity = await this.DbContext.Teams.AddAsync(this.team!);
+      this.Id = entity.Entity.Id.ToString();
+    }
+
+    await this.DbContext.SaveChangesAsync();
+  }
+}

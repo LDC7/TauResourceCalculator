@@ -11,4 +11,6 @@ public class Team : IIdentifiable
   public required string Name { get; set; }
 
   public virtual ICollection<Member> Members { get; set; } = new List<Member>();
+
+  public ICollection<DayOfWeekResourceSubstraction> ResourceSubstractionsPerDay { get; set; } = new List<DayOfWeekResourceSubstraction>();
 }

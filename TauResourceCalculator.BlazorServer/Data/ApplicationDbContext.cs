@@ -6,11 +6,18 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 using TauResourceCalculator.BlazorServer.Data.Configurations;
 using TauResourceCalculator.BlazorServer.Interfaces;
+using TauResourceCalculator.BlazorServer.Models;
 
 namespace TauResourceCalculator.BlazorServer.Data;
 
 internal abstract class ApplicationDbContext : DbContext
 {
+  public DbSet<Team> Teams { get; set; }
+
+  public DbSet<Project> Projects { get; set; }
+
+  public DbSet<Sprint> Sprints { get; set; }
+
   public ApplicationDbContext(DbContextOptions options)
     : base(options)
   {
@@ -18,11 +25,13 @@ internal abstract class ApplicationDbContext : DbContext
 
   protected override void OnModelCreating(ModelBuilder builder)
   {
+    builder
+      .ApplyConfiguration(new TeamEntityConfiguration())
+      .ApplyConfiguration(new ProjectEntityConfiguration())
+      .ApplyConfiguration(new SprintEntityConfiguration());
+
     ApplyTPCStrategy(builder);
     ApplyEnumToStringConverter(builder);
-
-    builder
-      .ApplyConfiguration(new TeamEntityConfiguration());
 
     base.OnModelCreating(builder);
   }
@@ -35,11 +44,12 @@ internal abstract class ApplicationDbContext : DbContext
       .ToImmutableArray();
     foreach (var entityType in identifiableEntities)
     {
-      modelBuilder.Entity(entityType.ClrType)
-        .UseTpcMappingStrategy()
-        .Property(nameof(IIdentifiable.Id))
-          .HasValueGenerator<GuidValueGenerator>()
-          .ValueGeneratedNever();
+      modelBuilder
+        .Entity(entityType.ClrType)
+          .UseTpcMappingStrategy()
+          .Property(nameof(IIdentifiable.Id))
+            .HasValueGenerator<GuidValueGenerator>()
+            .ValueGeneratedNever();
     }
   }
 
