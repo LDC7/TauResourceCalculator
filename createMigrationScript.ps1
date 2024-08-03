@@ -1,14 +1,12 @@
-[Console]::InputEncoding = [System.Text.Encoding]::UTF8
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-
-$projectPath = "TauResourceCalculator.BlazorServer/TauResourceCalculator.BlazorServer.csproj"
-
 $dbContextType = "SQLite"
-$dbContextName = "Application" + $dbContextType + "DbContext"
+$migrationName = Read-Host "Input migration name"
 
-$migrationName = Read-Host "Введите имя миграции:"
+$projectFolder = [IO.Path]::GetFullPath("./Infrastructure/Data." + $dbContextType + "/");
+$prevLocation = Get-Location
+Set-Location $projectFolder
 
-$outputPath = "./Data/" + $dbContextType + "/Migrations/"
-$namespace = "TauResourceCalculator.BlazorServer.Data." + $dbContextType + ".Migrations"
+$outputPath = "Migrations"
+$namespace = "TauResourceCalculator.Infrastructure.Data." + $dbContextType + ".Migrations"
+dotnet ef migrations add $migrationName -o $outputPath -n $namespace
 
-dotnet ef migrations add $migrationName -o $outputPath -n $namespace -p $projectPath -s $projectPath -c $dbContextName
+Set-Location $prevLocation

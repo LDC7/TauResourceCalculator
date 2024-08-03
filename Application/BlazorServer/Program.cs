@@ -12,6 +12,7 @@ using MudBlazor.Services;
 using TauResourceCalculator.Application.BlazorServer.Components;
 using TauResourceCalculator.Application.BlazorServer.Extensions;
 using TauResourceCalculator.Application.BlazorServer.Settings;
+using TauResourceCalculator.Domain.ResourceCalculator.Services;
 using TauResourceCalculator.Infrastructure.Data;
 
 namespace TauResourceCalculator;
@@ -54,6 +55,10 @@ public sealed class Program
     builder.Services.Configure<ApplicationSettings>(appConfigSection);
 
     builder.AddApplicationDbContext();
+
+    builder.Services
+      .AddScoped<TeamService>()
+      .AddScoped<SprintService>();
 
     var app = builder.Build();
 
