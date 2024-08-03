@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TauResourceCalculator.BlazorServer.Models;
+namespace TauResourceCalculator.Domain.ResourceCalculator.Models;
 
 public class DayOfWeekResourceSubstraction
 {

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
-using TauResourceCalculator.BlazorServer.Models;
+using TauResourceCalculator.Domain.ResourceCalculator.Models;
 
-namespace TauResourceCalculator.BlazorServer.Utils;
+namespace TauResourceCalculator.Domain.ResourceCalculator.Services;
 
-public static class SprintUtils
+public sealed class SprintService
 {
-  public static string GenerateSprintName(string version, int sprintNumber, int sprintsCount)
+  public string GenerateSprintName(string version, int sprintNumber, int sprintsCount)
   {
     var sprintSuffix = sprintNumber.ToString();
 
@@ -18,7 +18,7 @@ public static class SprintUtils
     return $"{version.ToLowerInvariant()} Iteration {sprintSuffix}";
   }
 
-  public static void FillEntriesByMember(Sprint sprint, Member teamMember)
+  public void FillEntriesByMember(Sprint sprint, Member teamMember)
   {
     var currentDate = sprint.Start;
     while (currentDate <= sprint.End)

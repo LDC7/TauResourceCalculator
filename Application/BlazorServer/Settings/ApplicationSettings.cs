@@ -1,4 +1,4 @@
-﻿namespace TauResourceCalculator.BlazorServer.Settings;
+﻿namespace TauResourceCalculator.Application.BlazorServer.Settings;
 
 public enum DatabaseType
 {

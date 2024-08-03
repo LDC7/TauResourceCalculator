@@ -1,8 +1,8 @@
 ﻿@page "/sprints/{Id}"
 
 @using Microsoft.EntityFrameworkCore
-@using TauResourceCalculator.BlazorServer.Data
-@using TauResourceCalculator.BlazorServer.Models
+@using TauResourceCalculator.Domain.ResourceCalculator.Models
+@using TauResourceCalculator.Infrastructure.Data
 
 @inject ApplicationDbContext DbContext
 
@@ -18,7 +18,7 @@
 }
 else
 {
-  
+
 }
 
 @code {

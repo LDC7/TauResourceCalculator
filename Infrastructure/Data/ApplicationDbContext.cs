@@ -4,13 +4,13 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
-using TauResourceCalculator.BlazorServer.Data.Configurations;
-using TauResourceCalculator.BlazorServer.Interfaces;
-using TauResourceCalculator.BlazorServer.Models;
+using TauResourceCalculator.Common.Abstractions;
+using TauResourceCalculator.Domain.ResourceCalculator.Models;
+using TauResourceCalculator.Infrastructure.Data.Configurations;
 
-namespace TauResourceCalculator.BlazorServer.Data;
+namespace TauResourceCalculator.Infrastructure.Data;
 
-internal abstract class ApplicationDbContext : DbContext
+public abstract class ApplicationDbContext : DbContext
 {
   public DbSet<Team> Teams { get; set; }
 
@@ -30,13 +30,31 @@ internal abstract class ApplicationDbContext : DbContext
       .ApplyConfiguration(new ProjectEntityConfiguration())
       .ApplyConfiguration(new SprintEntityConfiguration());
 
-    ApplyTPCStrategy(builder);
+    SetupIdentifiableKey(builder);
+    ApplyTPCStrategyToIdentifiableEntities(builder);
     ApplyEnumToStringConverter(builder);
 
     base.OnModelCreating(builder);
   }
 
-  private static void ApplyTPCStrategy(ModelBuilder modelBuilder)
+  private static void SetupIdentifiableKey(ModelBuilder modelBuilder)
+  {
+    var identifiableEntities = modelBuilder.Model
+      .GetEntityTypes()
+      .Where(e => e.ClrType.IsAssignableTo(typeof(IIdentifiable)))
+      .ToImmutableArray();
+    foreach (var entityType in identifiableEntities)
+    {
+      var entity = modelBuilder.Entity(entityType.ClrType);
+      entity.HasKey(nameof(IIdentifiable.Id));
+      entity
+        .Property(nameof(IIdentifiable.Id))
+          .HasValueGenerator<GuidValueGenerator>()
+          .ValueGeneratedNever();
+    }
+  }
+
+  private static void ApplyTPCStrategyToIdentifiableEntities(ModelBuilder modelBuilder)
   {
     var identifiableEntities = modelBuilder.Model
       .GetEntityTypes()
@@ -46,10 +64,7 @@ internal abstract class ApplicationDbContext : DbContext
     {
       modelBuilder
         .Entity(entityType.ClrType)
-          .UseTpcMappingStrategy()
-          .Property(nameof(IIdentifiable.Id))
-            .HasValueGenerator<GuidValueGenerator>()
-            .ValueGeneratedNever();
+        .UseTpcMappingStrategy();
     }
   }
 

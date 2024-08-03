@@ -1,7 +1,7 @@
 ﻿using System;
-using TauResourceCalculator.BlazorServer.Interfaces;
+using TauResourceCalculator.Common.Abstractions;
 
-namespace TauResourceCalculator.BlazorServer.Models;
+namespace TauResourceCalculator.Domain.ResourceCalculator.Models;
 
 public class SprintEntry : IIdentifiable
 {

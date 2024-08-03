@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace TauResourceCalculator.BlazorServer.Data.SQLite;
+namespace TauResourceCalculator.Infrastructure.Data.SQLite;
 
 internal sealed class ApplicationSQLiteDbContextDesignFactory : IDesignTimeDbContextFactory<ApplicationSQLiteDbContext>
 {

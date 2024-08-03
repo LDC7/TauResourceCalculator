@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using TauResourceCalculator.BlazorServer.Data;
-using TauResourceCalculator.BlazorServer.Data.SQLite;
-using TauResourceCalculator.BlazorServer.Settings;
+using TauResourceCalculator.Application.BlazorServer.Settings;
+using TauResourceCalculator.Infrastructure.Data;
+using TauResourceCalculator.Infrastructure.Data.SQLite;
 
-namespace TauResourceCalculator.BlazorServer.Extensions;
+namespace TauResourceCalculator.Application.BlazorServer.Extensions;
 
 internal static class WebApplicationBuilderExtensions
 {

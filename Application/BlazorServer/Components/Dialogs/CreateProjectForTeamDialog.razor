@@ -1,9 +1,11 @@
 ﻿@using Microsoft.EntityFrameworkCore
-@using TauResourceCalculator.BlazorServer.Data
-@using TauResourceCalculator.BlazorServer.Models
-@using TauResourceCalculator.BlazorServer.Utils
+@using TauResourceCalculator.Domain.ResourceCalculator.Models
+@using TauResourceCalculator.Domain.ResourceCalculator.Services
+@using TauResourceCalculator.Domain.ResourceCalculator.Utils
+@using TauResourceCalculator.Infrastructure.Data
 
 @inject ApplicationDbContext DbContext
+@inject SprintService SprintService
 
 <MudDialog>
   <DialogContent>
@@ -103,7 +105,7 @@
     {
       var sprint = new Sprint()
         {
-          Name = SprintUtils.GenerateSprintName(this.data.Version!, i, this.data.SprintsCount),
+          Name = this.SprintService.GenerateSprintName(this.data.Version!, i, this.data.SprintsCount),
           Start = iterationStartDate,
           End = DateUtils.FindNextSunday(iterationStartDate, this.data.WeeksPerSprint),
           Project = null!
@@ -112,7 +114,7 @@
       iterationStartDate = sprint.End.AddDays(1);
 
       foreach (var member in team.Members)
-        SprintUtils.FillEntriesByMember(sprint, member);
+        this.SprintService.FillEntriesByMember(sprint, member);
 
       this.data.Sprints.Add(sprint);
     }

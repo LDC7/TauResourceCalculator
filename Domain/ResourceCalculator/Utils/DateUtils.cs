@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TauResourceCalculator.BlazorServer.Utils;
+namespace TauResourceCalculator.Domain.ResourceCalculator.Utils;
 
 public static class DateUtils
 {

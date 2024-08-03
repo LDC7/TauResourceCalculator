@@ -2,10 +2,11 @@
 @page "/teams/{Id}"
 
 @using Microsoft.EntityFrameworkCore
-@using TauResourceCalculator.BlazorServer.Data
-@using TauResourceCalculator.BlazorServer.Extensions
-@using TauResourceCalculator.BlazorServer.Models
+@using TauResourceCalculator.Domain.ResourceCalculator.Models
+@using TauResourceCalculator.Domain.ResourceCalculator.Services
+@using TauResourceCalculator.Infrastructure.Data
 
+@inject TeamService TeamService
 @inject ApplicationDbContext DbContext
 
 <PageTitle>@this.PageTitle</PageTitle>
@@ -132,7 +133,7 @@ else
     if (this.Id is null)
     {
       this.team = new Team() { Name = "Team" };
-      this.team.FillTeamWithSubstractions();
+      this.TeamService.FillTeamWithSubstractions(team);
     }
     else if (Guid.TryParse(this.Id, out var id))
     {

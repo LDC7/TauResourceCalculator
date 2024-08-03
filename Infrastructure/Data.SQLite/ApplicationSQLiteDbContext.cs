@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace TauResourceCalculator.BlazorServer.Data.SQLite;
+namespace TauResourceCalculator.Infrastructure.Data.SQLite;
 
-internal sealed class ApplicationSQLiteDbContext : ApplicationDbContext
+public sealed class ApplicationSQLiteDbContext : ApplicationDbContext
 {
   public ApplicationSQLiteDbContext(DbContextOptions<ApplicationSQLiteDbContext> options)
     : base(options)

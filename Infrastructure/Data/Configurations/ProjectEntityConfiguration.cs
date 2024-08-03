@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TauResourceCalculator.BlazorServer.Models;
+using TauResourceCalculator.Domain.ResourceCalculator.Models;
 
-namespace TauResourceCalculator.BlazorServer.Data.Configurations;
+namespace TauResourceCalculator.Infrastructure.Data.Configurations;
 
 internal sealed class ProjectEntityConfiguration : IEntityTypeConfiguration<Project>
 {

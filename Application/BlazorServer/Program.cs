@@ -9,12 +9,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
-using TauResourceCalculator.BlazorServer.Components;
-using TauResourceCalculator.BlazorServer.Data;
-using TauResourceCalculator.BlazorServer.Extensions;
-using TauResourceCalculator.BlazorServer.Settings;
+using TauResourceCalculator.Application.BlazorServer.Components;
+using TauResourceCalculator.Application.BlazorServer.Extensions;
+using TauResourceCalculator.Application.BlazorServer.Settings;
+using TauResourceCalculator.Infrastructure.Data;
 
-namespace TauResourceCalculator.BlazorServer;
+namespace TauResourceCalculator;
 
 public sealed class Program
 {
@@ -53,7 +53,6 @@ public sealed class Program
     var appConfigSection = configuration.GetSection("App");
     builder.Services.Configure<ApplicationSettings>(appConfigSection);
 
-    builder.Services.AddDatabaseDeveloperPageExceptionFilter();
     builder.AddApplicationDbContext();
 
     var app = builder.Build();

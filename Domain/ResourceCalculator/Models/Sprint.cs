@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using TauResourceCalculator.BlazorServer.Interfaces;
+using TauResourceCalculator.Common.Abstractions;
 
-namespace TauResourceCalculator.BlazorServer.Models;
+namespace TauResourceCalculator.Domain.ResourceCalculator.Models;
 
 public class Sprint : IIdentifiable
 {
