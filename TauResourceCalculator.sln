@@ -3,7 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TauResourceCalculator.BlazorServer", "TauResourceCalculator.BlazorServer\TauResourceCalculator.BlazorServer.csproj", "{3C9583D4-6247-4D7B-B301-66D4EF884BAF}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0.Common", "0.Common", "{9AF84F77-2EA2-4AB9-8ED2-8FA8A18C023A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2.Infrastructure", "2.Infrastructure", "{D44795FC-8ECC-4FA4-8D81-BC23D42BAE38}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1.Domain", "1.Domain", "{324C907C-6FFF-4C1A-B229-13BFCB163BBC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3.Application", "3.Application", "{3416CBC1-507D-4805-ABD0-F8008E083BCE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorServer", "Application\BlazorServer\BlazorServer.csproj", "{ADF56A34-E195-4A2F-B335-212721202093}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{1CD5E974-83B7-4756-9BAC-A142F2C0F03B}"
 EndProject
@@ -13,13 +21,16 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3C9583D4-6247-4D7B-B301-66D4EF884BAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3C9583D4-6247-4D7B-B301-66D4EF884BAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3C9583D4-6247-4D7B-B301-66D4EF884BAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3C9583D4-6247-4D7B-B301-66D4EF884BAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADF56A34-E195-4A2F-B335-212721202093}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADF56A34-E195-4A2F-B335-212721202093}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADF56A34-E195-4A2F-B335-212721202093}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADF56A34-E195-4A2F-B335-212721202093}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{ADF56A34-E195-4A2F-B335-212721202093} = {3416CBC1-507D-4805-ABD0-F8008E083BCE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1EFA83B3-0738-47F7-A48F-FD11386B07FD}
