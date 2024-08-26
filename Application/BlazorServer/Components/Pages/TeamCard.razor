@@ -86,12 +86,17 @@ else
         </MudTable>
         <br />
         <MudText>Модификаторы по дням недели или участникам:</MudText>
+        <MudFab Color="Color.Primary"
+                Size="Size.Medium"
+                StartIcon="@Icons.Material.Filled.Add"
+                OnClick="@this.HandleAddModifierButtonClick" />
         <MudTable Items="@this.team.ResourceModifiers" Hover="true" Elevation="0" AllowUnsorted="true">
           <ColGroup>
             <col style="width: 150px;" />
             <col style="width: 150px;" />
             <col style="width: 80px;" />
             <col style="width: 80px;" />
+            <col style="width: 55px;" />
           </ColGroup>
           <HeaderContent>
             <MudTh>
@@ -106,6 +111,7 @@ else
             <MudTh>
               Ресурс
             </MudTh>
+            <MudTh />
           </HeaderContent>
           <RowTemplate>
             <MudTd DataLabel="@nameof(ResourceModifier.Day)">
@@ -146,7 +152,15 @@ else
             <MudTd DataLabel="@nameof(ResourceModifier.Resource)">
               <MudNumericField @bind-Value="context.Resource"
                                Required="true"
+                               Label="@nameof(ResourceModifier.Resource)"
                                Margin="Margin.Dense" />
+            </MudTd>
+            <MudTd>
+              <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                             Variant="Variant.Filled"
+                             Color="Color.Error"
+                             Size="Size.Small"
+                             OnClick="() => this.HandleDeleteModifierButtonClick(context)" />
             </MudTd>
           </RowTemplate>
         </MudTable>
@@ -190,6 +204,18 @@ else
   private Task HandleDeleteMemberButtonClick(Member member)
   {
     this.team?.Members.Remove(member);
+    return Task.CompletedTask;
+  }
+
+  private Task HandleAddModifierButtonClick()
+  {
+    this.team?.ResourceModifiers.Add(new ResourceModifier() { Team = this.team, Operation = ResourceModifierOperation.Subtraction, Resource = 0 });
+    return Task.CompletedTask;
+  }
+
+  private Task HandleDeleteModifierButtonClick(ResourceModifier modifier)
+  {
+    this.team?.ResourceModifiers.Remove(modifier);
     return Task.CompletedTask;
   }
 

@@ -2,8 +2,8 @@
 
 public enum ResourceModifierOperation
 {
-  Division,
   Addition,
   Subtraction,
-  Multiplication
+  Multiplication,
+  Division
 }

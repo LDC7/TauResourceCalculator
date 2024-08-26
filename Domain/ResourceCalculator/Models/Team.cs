@@ -12,5 +12,5 @@ public class Team : IIdentifiable
 
   public virtual ICollection<Member> Members { get; set; } = new List<Member>();
 
-  public ICollection<ResourceModifier> ResourceModifiers { get; set; } = new List<ResourceModifier>();
+  public virtual ICollection<ResourceModifier> ResourceModifiers { get; set; } = new List<ResourceModifier>();
 }

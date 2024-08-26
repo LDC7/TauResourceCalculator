@@ -7,9 +7,9 @@ public class ResourceModifier : IIdentifiable
 {
   public Guid Id { get; set; }
 
-  public required Team Team { get; set; }
+  public virtual required Team Team { get; set; }
 
-  public Member? Member { get; set; }
+  public virtual Member? Member { get; set; }
 
   public DayOfWeek? Day { get; set; }
 
