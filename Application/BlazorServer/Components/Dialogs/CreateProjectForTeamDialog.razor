@@ -97,7 +97,7 @@
     this.data.Sprints.Clear();
     var team = await this.DbContext.Teams
       .Include(t => t.Members)
-      .Include(t => t.ResourceSubstractionsPerDay)
+      .Include(t => t.ResourceModifiers)
       .SingleAsync(t => t == this.data.Team);
 
     var iterationStartDate = DateOnly.FromDateTime(this.data.StartProject!.Value);

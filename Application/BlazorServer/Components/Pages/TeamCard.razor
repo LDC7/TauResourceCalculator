@@ -6,7 +6,6 @@
 @using TauResourceCalculator.Domain.ResourceCalculator.Services
 @using TauResourceCalculator.Infrastructure.Data
 
-@inject TeamService TeamService
 @inject ApplicationDbContext DbContext
 
 <PageTitle>@this.PageTitle</PageTitle>
@@ -86,10 +85,12 @@ else
           </RowTemplate>
         </MudTable>
         <br />
-        <MudText>Вычеты за день недели:</MudText>
-        <MudTable Items="@this.team.ResourceSubstractionsPerDay" Hover="true" Elevation="0" AllowUnsorted="true">
+        <MudText>Модификаторы по дням недели или участникам:</MudText>
+        <MudTable Items="@this.team.ResourceModifiers" Hover="true" Elevation="0" AllowUnsorted="true">
           <ColGroup>
             <col style="width: 150px;" />
+            <col style="width: 150px;" />
+            <col style="width: 80px;" />
             <col style="width: 80px;" />
           </ColGroup>
           <HeaderContent>
@@ -97,14 +98,52 @@ else
               День
             </MudTh>
             <MudTh>
+              Участник
+            </MudTh>
+            <MudTh>
+              Операция
+            </MudTh>
+            <MudTh>
               Ресурс
             </MudTh>
           </HeaderContent>
           <RowTemplate>
-            <MudTd DataLabel="@nameof(DayOfWeekResourceSubstraction.Day)">
-              @context.Day.ToString()
+            <MudTd DataLabel="@nameof(ResourceModifier.Day)">
+              <MudSelect @bind-Value="context.Day"
+                         T="DayOfWeek?"
+                         Label="@nameof(ResourceModifier.Day)"
+                         AnchorOrigin="Origin.BottomCenter">
+                <MudSelectItem T="DayOfWeek?" Value="null">empty</MudSelectItem>
+                <MudSelectItem T="DayOfWeek?" Value="@DayOfWeek.Monday" />
+                <MudSelectItem T="DayOfWeek?" Value="@DayOfWeek.Tuesday" />
+                <MudSelectItem T="DayOfWeek?" Value="@DayOfWeek.Wednesday" />
+                <MudSelectItem T="DayOfWeek?" Value="@DayOfWeek.Thursday" />
+                <MudSelectItem T="DayOfWeek?" Value="@DayOfWeek.Friday" />
+              </MudSelect>
             </MudTd>
-            <MudTd DataLabel="@nameof(DayOfWeekResourceSubstraction.Resource)">
+            <MudTd DataLabel="@nameof(ResourceModifier.Member)">
+              <MudSelect @bind-Value="context.Member"
+                         T="Member"
+                         Label="@nameof(ResourceModifier.Member)"
+                         AnchorOrigin="Origin.BottomCenter">
+                @foreach (var teamMember in this.team.Members)
+                {
+                  <MudSelectItem T="Member" Value="@teamMember">@teamMember.Name</MudSelectItem>
+                }
+              </MudSelect>
+            </MudTd>
+            <MudTd DataLabel="@nameof(ResourceModifier.Operation)">
+              <MudSelect @bind-Value="context.Operation"
+                         T="ResourceModifierOperation"
+                         Label="@nameof(ResourceModifier.Operation)"
+                         AnchorOrigin="Origin.BottomCenter">
+                <MudSelectItem T="ResourceModifierOperation" Value="@ResourceModifierOperation.Addition" />
+                <MudSelectItem T="ResourceModifierOperation" Value="@ResourceModifierOperation.Multiplication" />
+                <MudSelectItem T="ResourceModifierOperation" Value="@ResourceModifierOperation.Subtraction" />
+                <MudSelectItem T="ResourceModifierOperation" Value="@ResourceModifierOperation.Division" />
+              </MudSelect>
+            </MudTd>
+            <MudTd DataLabel="@nameof(ResourceModifier.Resource)">
               <MudNumericField @bind-Value="context.Resource"
                                Required="true"
                                Margin="Margin.Dense" />
@@ -133,7 +172,6 @@ else
     if (this.Id is null)
     {
       this.team = new Team() { Name = "Team" };
-      this.TeamService.FillTeamWithSubstractions(team);
     }
     else if (Guid.TryParse(this.Id, out var id))
     {

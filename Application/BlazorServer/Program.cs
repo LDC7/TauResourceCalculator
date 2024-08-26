@@ -58,7 +58,6 @@ public sealed class Program
     builder.AddApplicationDbContext();
 
     builder.Services
-      .AddScoped<TeamService>()
       .AddScoped<SprintService>()
       .AddTransient(typeof(IRepository<>), typeof(EntityFrameworkRepository<>));
 

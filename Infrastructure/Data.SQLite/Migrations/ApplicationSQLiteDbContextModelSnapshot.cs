@@ -68,6 +68,38 @@ namespace TauResourceCalculator.Infrastructure.Data.SQLite.Migrations
                     b.UseTpcMappingStrategy();
                 });
 
+            modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.ResourceModifier", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Day")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("MemberId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Operation")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("Resource")
+                        .HasColumnType("REAL");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MemberId");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("ResourceModifier");
+
+                    b.UseTpcMappingStrategy();
+                });
+
             modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.Sprint", b =>
                 {
                     b.Property<Guid>("Id")
@@ -153,6 +185,24 @@ namespace TauResourceCalculator.Infrastructure.Data.SQLite.Migrations
                     b.Navigation("Team");
                 });
 
+            modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.ResourceModifier", b =>
+                {
+                    b.HasOne("TauResourceCalculator.Domain.ResourceCalculator.Models.Member", "Member")
+                        .WithMany()
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("TauResourceCalculator.Domain.ResourceCalculator.Models.Team", "Team")
+                        .WithMany("ResourceModifiers")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Member");
+
+                    b.Navigation("Team");
+                });
+
             modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.Sprint", b =>
                 {
                     b.HasOne("TauResourceCalculator.Domain.ResourceCalculator.Models.Project", "Project")
@@ -175,30 +225,6 @@ namespace TauResourceCalculator.Infrastructure.Data.SQLite.Migrations
                     b.Navigation("Sprint");
                 });
 
-            modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.Team", b =>
-                {
-                    b.OwnsMany("TauResourceCalculator.Domain.ResourceCalculator.Models.DayOfWeekResourceSubstraction", "ResourceSubstractionsPerDay", b1 =>
-                        {
-                            b1.Property<Guid>("TeamId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<string>("Day")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<double>("Resource")
-                                .HasColumnType("REAL");
-
-                            b1.HasKey("TeamId", "Day");
-
-                            b1.ToTable("DayOfWeekResourceSubstraction");
-
-                            b1.WithOwner()
-                                .HasForeignKey("TeamId");
-                        });
-
-                    b.Navigation("ResourceSubstractionsPerDay");
-                });
-
             modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.Project", b =>
                 {
                     b.Navigation("Sprints");
@@ -212,6 +238,8 @@ namespace TauResourceCalculator.Infrastructure.Data.SQLite.Migrations
             modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.Team", b =>
                 {
                     b.Navigation("Members");
+
+                    b.Navigation("ResourceModifiers");
                 });
 #pragma warning restore 612, 618
         }

@@ -27,6 +27,7 @@ public abstract class ApplicationDbContext : DbContext
   {
     builder
       .ApplyConfiguration(new TeamEntityConfiguration())
+      .ApplyConfiguration(new ResourceModifierEntityConfiguration())
       .ApplyConfiguration(new ProjectEntityConfiguration())
       .ApplyConfiguration(new SprintEntityConfiguration());
 

@@ -12,5 +12,5 @@ public class Team : IIdentifiable
 
   public virtual ICollection<Member> Members { get; set; } = new List<Member>();
 
-  public ICollection<DayOfWeekResourceSubstraction> ResourceSubstractionsPerDay { get; set; } = new List<DayOfWeekResourceSubstraction>();
+  public ICollection<ResourceModifier> ResourceModifiers { get; set; } = new List<ResourceModifier>();
 }

@@ -13,14 +13,7 @@ internal sealed class TeamEntityConfiguration : IEntityTypeConfiguration<Team>
       .WithOne(e => e.Team);
 
     builder
-      .OwnsMany(e => e.ResourceSubstractionsPerDay, substractionBuilder =>
-      {
-        substractionBuilder
-          .WithOwner()
-            .HasForeignKey(s => s.TeamId);
-
-        substractionBuilder
-          .HasKey(s => new { s.TeamId, s.Day });
-      });
+      .HasMany(e => e.ResourceModifiers)
+      .WithOne(e => e.Team);
   }
 }

@@ -59,25 +59,6 @@ namespace TauResourceCalculator.Infrastructure.Data.SQLite.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DayOfWeekResourceSubstraction",
-                columns: table => new
-                {
-                    TeamId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Day = table.Column<string>(type: "TEXT", nullable: false),
-                    Resource = table.Column<double>(type: "REAL", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DayOfWeekResourceSubstraction", x => new { x.TeamId, x.Day });
-                    table.ForeignKey(
-                        name: "FK_DayOfWeekResourceSubstraction_Teams_TeamId",
-                        column: x => x.TeamId,
-                        principalTable: "Teams",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Member",
                 columns: table => new
                 {
@@ -120,9 +101,46 @@ namespace TauResourceCalculator.Infrastructure.Data.SQLite.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ResourceModifier",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    TeamId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    MemberId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    Day = table.Column<int>(type: "INTEGER", nullable: true),
+                    Operation = table.Column<string>(type: "TEXT", nullable: false),
+                    Resource = table.Column<double>(type: "REAL", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ResourceModifier", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ResourceModifier_Member_MemberId",
+                        column: x => x.MemberId,
+                        principalTable: "Member",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ResourceModifier_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Member_TeamId",
                 table: "Member",
+                column: "TeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ResourceModifier_MemberId",
+                table: "ResourceModifier",
+                column: "MemberId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ResourceModifier_TeamId",
+                table: "ResourceModifier",
                 column: "TeamId");
 
             migrationBuilder.CreateIndex(
@@ -140,19 +158,19 @@ namespace TauResourceCalculator.Infrastructure.Data.SQLite.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "DayOfWeekResourceSubstraction");
-
-            migrationBuilder.DropTable(
-                name: "Member");
+                name: "ResourceModifier");
 
             migrationBuilder.DropTable(
                 name: "SprintEntry");
 
             migrationBuilder.DropTable(
-                name: "Teams");
+                name: "Member");
 
             migrationBuilder.DropTable(
                 name: "Sprints");
+
+            migrationBuilder.DropTable(
+                name: "Teams");
 
             migrationBuilder.DropTable(
                 name: "Projects");

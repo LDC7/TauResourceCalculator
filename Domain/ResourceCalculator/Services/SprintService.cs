@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using TauResourceCalculator.Domain.ResourceCalculator.Extensions;
 using TauResourceCalculator.Domain.ResourceCalculator.Models;
 
 namespace TauResourceCalculator.Domain.ResourceCalculator.Services;
@@ -25,8 +26,11 @@ public sealed class SprintService
     {
       if (currentDate.DayOfWeek != DayOfWeek.Saturday || currentDate.DayOfWeek != DayOfWeek.Sunday)
       {
-        var resource = teamMember.Resource;
-        resource += teamMember.Team.ResourceSubstractionsPerDay.FirstOrDefault(s => s.Day == currentDate.DayOfWeek)?.Resource ?? 0;
+        var modifiers = teamMember.Team.ResourceModifiers
+          .Where(m => (m.Day == null && m.Member == teamMember) || (m.Day == currentDate.DayOfWeek && m.Member == null) || (m.Day == currentDate.DayOfWeek && m.Member == teamMember))
+          .ToArray();
+
+        var resource = modifiers.ApplyTo(teamMember.Resource);
 
         var entry = new SprintEntry()
         {
