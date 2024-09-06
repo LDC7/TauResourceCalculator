@@ -24,7 +24,7 @@ else
       <MudForm Model="this.project" @ref="this.projectFormRef">
         <MudTextField @bind-Value="this.project.Name"
                       Typo="Typo.h5"
-                      Required="true" Label="@nameof(Team.Name)"
+                      Required="true" Label="@nameof(Project.Name)"
                       Margin="Margin.Dense"
                       Variant="Variant.Text" />
         <br />
@@ -33,7 +33,7 @@ else
                 Size="Size.Medium"
                 StartIcon="@Icons.Material.Filled.Add"
                 OnClick="@this.HandleAddSprintButtonClick" />
-        <MudTable Items="@this.project.Sprints" Hover="true" Elevation="0" AllowUnsorted="true">
+        <MudTable Items="@this.project.Sprints" Hover="true" Elevation="0">
           <ColGroup>
             <col />
             <col style="width: 200px;" />
@@ -42,13 +42,19 @@ else
           </ColGroup>
           <HeaderContent>
             <MudTh>
-              Имя
+              <MudTableSortLabel SortBy="new Func<Sprint, object>(p => p.Name)">
+                Имя
+              </MudTableSortLabel>
             </MudTh>
             <MudTh>
-              Начало
+              <MudTableSortLabel SortBy="new Func<Sprint, object>(p => p.Start)" InitialDirection="SortDirection.Ascending">
+                Начало
+              </MudTableSortLabel>
             </MudTh>
             <MudTh>
-              Конец
+              <MudTableSortLabel SortBy="new Func<Sprint, object>(p => p.End)">
+                Конец
+              </MudTableSortLabel>
             </MudTh>
             <MudTh />
           </HeaderContent>

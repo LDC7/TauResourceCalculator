@@ -18,11 +18,44 @@
 }
 else
 {
-
+  <MudCard>
+    <MudCardContent>
+      <MudForm Model="this.sprint" @ref="this.sprintFormRef">
+        <MudTextField @bind-Value="this.sprint.Name"
+                      Typo="Typo.h5"
+                      Required="true" Label="@nameof(Sprint.Name)"
+                      Margin="Margin.Dense"
+                      Variant="Variant.Text" />
+        <br />
+        <MudText>Ресурсы:</MudText>
+        <MudTable Items="@this.rows" Hover="true">
+          <HeaderContent>
+            <MudTh>Name</MudTh>
+            <MudTh>Type</MudTh>
+            @foreach (var column in this.columns)
+            {
+              <MudTh>@column</MudTh>
+            }
+          </HeaderContent>
+          <RowTemplate>
+            <MudTd>@context.Name</MudTd>
+            <MudTd>@context.ResourceType</MudTd>
+            @foreach (var column in this.columns)
+            {
+              <MudTd>@context.GetResourceForDate(column)</MudTd>
+            }
+          </RowTemplate>
+        </MudTable>
+      </MudForm>
+    </MudCardContent>
+  </MudCard>
 }
 
 @code {
+  private MudForm sprintFormRef = null!;
   private Sprint? sprint;
+  private IReadOnlyCollection<DateOnly> columns = Array.Empty<DateOnly>();
+  private IReadOnlyCollection<DataRow> rows = Array.Empty<DataRow>();
 
   private string PageTitle => this.sprint?.Name ?? "Спринт";
 
@@ -33,9 +66,45 @@ else
   {
     if (Guid.TryParse(this.Id, out var id))
     {
-      this.sprint = await this.DbContext.Sprints.FirstOrDefaultAsync(p => p.Id == id);
+      this.sprint = await this.DbContext.Sprints.Include(s => s.Entries).FirstOrDefaultAsync(p => p.Id == id);
+      if (this.sprint != null)
+      {
+        this.columns = this.sprint.Entries.Select(e => e.Date).Distinct().ToArray();
+        this.rows = GetRowsFromEntries(this.sprint);
+      }
     }
 
     await base.OnInitializedAsync();
+  }
+
+  private static IReadOnlyCollection<DataRow> GetRowsFromEntries(Sprint sprint)
+  {
+    return sprint.Entries
+      .GroupBy(e => e.Name)
+      .Select(g =>
+      {
+        var first = g.First();
+        return new DataRow()
+          {
+            Name = first.Name,
+            ResourceType = first.ResourceType,
+            Entries = g.ToArray()
+          };
+      })
+      .ToArray();
+  }
+
+  private sealed class DataRow
+  {
+    public required string Name { get; set; }
+
+    public ResourceType ResourceType { get; set; }
+
+    public ICollection<SprintEntry> Entries { get; set; } = Array.Empty<SprintEntry>();
+
+    public double? GetResourceForDate(DateOnly date)
+    {
+      return this.Entries?.FirstOrDefault(e => e.Date == date)?.Resource;
+    }
   }
 }
