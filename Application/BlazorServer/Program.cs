@@ -9,8 +9,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
+using OfficeOpenXml;
 using TauResourceCalculator.Application.BlazorServer.Components;
 using TauResourceCalculator.Application.BlazorServer.Extensions;
+using TauResourceCalculator.Application.BlazorServer.Services;
 using TauResourceCalculator.Application.BlazorServer.Settings;
 using TauResourceCalculator.Common.Abstractions;
 using TauResourceCalculator.Domain.ResourceCalculator.Services;
@@ -57,9 +59,12 @@ public sealed class Program
 
     builder.AddApplicationDbContext();
 
+    ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
     builder.Services
       .AddScoped<SprintService>()
-      .AddTransient(typeof(IRepository<>), typeof(EntityFrameworkRepository<>));
+      .AddTransient(typeof(IRepository<>), typeof(EntityFrameworkRepository<>))
+      .AddTransient<XlsxReportService>();
 
     var app = builder.Build();
 
