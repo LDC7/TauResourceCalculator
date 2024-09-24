@@ -57,7 +57,7 @@ else
 
   protected override async Task OnInitializedAsync()
   {
-    this.projects = await this.DbContext.Projects.OrderByDescending(p => p.Created).ToListAsync();
+    this.projects = await this.DbContext.Projects.OrderByDescending(p => p.Created).ToListAsync(this.CancellationToken);
     await base.OnInitializedAsync();
   }
 
@@ -69,7 +69,7 @@ else
   private async Task HandleDeleteButtonClick(Project project)
   {
     this.DbContext.Projects.Remove(project);
-    await this.DbContext.SaveChangesAsync();
+    await this.DbContext.SaveChangesAsync(this.CancellationToken);
     this.projects?.Remove(project);
   }
 
@@ -93,7 +93,7 @@ else
         }
 
         await this.DbContext.Projects.AddAsync(project);
-        await this.DbContext.SaveChangesAsync();
+        await this.DbContext.SaveChangesAsync(this.CancellationToken);
         this.projects?.Add(project);
       }
     });

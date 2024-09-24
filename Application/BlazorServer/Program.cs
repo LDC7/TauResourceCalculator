@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
 using OfficeOpenXml;
 using TauResourceCalculator.Application.BlazorServer.Components;
+using TauResourceCalculator.Application.BlazorServer.Context;
 using TauResourceCalculator.Application.BlazorServer.Extensions;
 using TauResourceCalculator.Application.BlazorServer.Services;
 using TauResourceCalculator.Application.BlazorServer.Settings;
@@ -62,9 +63,12 @@ public sealed class Program
     ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
     builder.Services
+      .AddSingleton<DownloadFileContext>()
       .AddScoped<SprintService>()
       .AddTransient(typeof(IRepository<>), typeof(EntityFrameworkRepository<>))
       .AddTransient<XlsxReportService>();
+
+    builder.Services.AddControllers();
 
     var app = builder.Build();
 
@@ -75,6 +79,9 @@ public sealed class Program
 
     app.UseStaticFiles();
     app.UseAntiforgery();
+
+    app.MapControllerRoute(name: "default", "{controller}/{action}");
+    app.MapControllers();
 
     app
       .MapRazorComponents<App>()

@@ -55,7 +55,7 @@ else
 
   protected override async Task OnInitializedAsync()
   {
-    this.teams = await this.DbContext.Teams.ToListAsync();
+    this.teams = await this.DbContext.Teams.ToListAsync(this.CancellationToken);
     await base.OnInitializedAsync();
   }
 
@@ -67,7 +67,7 @@ else
   private async Task HandleDeleteButtonClick(Team team)
   {
     this.DbContext.Teams.Remove(team);
-    await this.DbContext.SaveChangesAsync();
+    await this.DbContext.SaveChangesAsync(this.CancellationToken);
     this.teams?.Remove(team);
   }
 }

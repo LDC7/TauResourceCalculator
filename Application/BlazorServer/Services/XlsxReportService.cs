@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using OfficeOpenXml;
@@ -9,55 +10,39 @@ namespace TauResourceCalculator.Application.BlazorServer.Services;
 
 internal sealed class XlsxReportService
 {
-  public async Task<Stream> BuildReport(Project project, CancellationToken cancellationToken)
+  public async Task<MemoryStream> BuildReport(Project project, CancellationToken cancellationToken)
   {
     cancellationToken.ThrowIfCancellationRequested();
     using (var excelPackage = new ExcelPackage())
     {
-      _ = await this.AddResourceDetailsWorksheet(excelPackage, project, cancellationToken);
-      _ = await this.AddProjectResourcesWorksheet(excelPackage, project, cancellationToken);
-      _ = await this.AddFeatureResourcesWorksheet(excelPackage, project, cancellationToken);
+      var resourceDetailsWorksheet = excelPackage.Workbook.Worksheets.Add("Детализация ресурсов");
+      var resourceDetailsWriter = new ResourceDetailsWorksheetWriter(resourceDetailsWorksheet);
+      var resourceDetailsReportInfo = await resourceDetailsWriter.Write(project, cancellationToken);
 
-      foreach (var sprint in project.Sprints)
-        _ = await this.AddSprintWorksheets(excelPackage, sprint, cancellationToken);
+      var projectResourcesWorksheet = excelPackage.Workbook.Worksheets.Add("Ресурс на проект");
+      var projectResourcesWritter = new ProjectResourcesWorksheetWritter(projectResourcesWorksheet);
+      var projectResourcesReportInfo = await projectResourcesWritter.Write(project, resourceDetailsReportInfo, cancellationToken);
+
+      var featureResourcesWorksheet = excelPackage.Workbook.Worksheets.Add("Планирование фич");
+#warning Undone!
+
+      foreach (var sprint in project.Sprints.OrderBy(s => s.Start))
+        _ = await this.AddSprintWorksheets(excelPackage, sprint, projectResourcesReportInfo, cancellationToken);
 
       // увы.
       var stream = new MemoryStream();
-      //await excelPackage.SaveAsAsync(stream, cancellationToken);
+      await excelPackage.SaveAsAsync(stream, cancellationToken);
 
-      await excelPackage.SaveAsAsync("test.xlsx", cancellationToken);
+      stream.Position = 0;
       return stream;
     }
   }
 
-  private async Task<ExcelWorksheet> AddResourceDetailsWorksheet(ExcelPackage excelPackage, Project project, CancellationToken cancellationToken)
-  {
-    cancellationToken.ThrowIfCancellationRequested();
-
-    var worksheet = excelPackage.Workbook.Worksheets.Add("Детализация ресурсов");
-    var writer = new ResourceDetailsWorksheetWriter(worksheet);
-    await writer.Write(project, cancellationToken);
-
-    return worksheet;
-  }
-
-  private async Task<ExcelWorksheet> AddProjectResourcesWorksheet(ExcelPackage excelPackage, Project project, CancellationToken cancellationToken)
-  {
-    cancellationToken.ThrowIfCancellationRequested();
-
-    var worksheet = excelPackage.Workbook.Worksheets.Add("Ресурс на проект");
-    return worksheet;
-  }
-
-  private async Task<ExcelWorksheet> AddFeatureResourcesWorksheet(ExcelPackage excelPackage, Project project, CancellationToken cancellationToken)
-  {
-    cancellationToken.ThrowIfCancellationRequested();
-
-    var worksheet = excelPackage.Workbook.Worksheets.Add("Планирование фич");
-    return worksheet;
-  }
-
-  private async Task<ExcelWorksheet> AddSprintWorksheets(ExcelPackage excelPackage, Sprint sprint, CancellationToken cancellationToken)
+  private async Task<ExcelWorksheet> AddSprintWorksheets(
+    ExcelPackage excelPackage,
+    Sprint sprint,
+    ProjectResourcesWorksheetWritter.ReportInfo projectResourcesReportInfo,
+    CancellationToken cancellationToken)
   {
     cancellationToken.ThrowIfCancellationRequested();
 

@@ -189,7 +189,7 @@ else
     }
     else if (Guid.TryParse(this.Id, out var id))
     {
-      this.team = await this.DbContext.Teams.Include(t => t.Members).FirstOrDefaultAsync(p => p.Id == id);
+      this.team = await this.DbContext.Teams.Include(t => t.Members).FirstOrDefaultAsync(p => p.Id == id, this.CancellationToken);
     }
 
     await base.OnInitializedAsync();
@@ -227,10 +227,10 @@ else
 
     if (this.Id is null)
     {
-      var entity = await this.DbContext.Teams.AddAsync(this.team!);
+      var entity = await this.DbContext.Teams.AddAsync(this.team!, this.CancellationToken);
       this.Id = entity.Entity.Id.ToString();
     }
 
-    await this.DbContext.SaveChangesAsync();
+    await this.DbContext.SaveChangesAsync(this.CancellationToken);
   }
 }

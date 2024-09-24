@@ -66,7 +66,7 @@ else
   {
     if (Guid.TryParse(this.Id, out var id))
     {
-      this.sprint = await this.DbContext.Sprints.Include(s => s.Entries).FirstOrDefaultAsync(p => p.Id == id);
+      this.sprint = await this.DbContext.Sprints.Include(s => s.Entries).FirstOrDefaultAsync(p => p.Id == id, this.CancellationToken);
       if (this.sprint != null)
       {
         this.columns = this.sprint.Entries.Select(e => e.Date).Distinct().ToArray();

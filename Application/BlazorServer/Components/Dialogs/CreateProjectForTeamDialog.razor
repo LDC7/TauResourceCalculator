@@ -66,7 +66,7 @@
 
   protected override async Task OnInitializedAsync()
   {
-    this.teams = await this.DbContext.Teams.ToArrayAsync();
+    this.teams = await this.DbContext.Teams.ToArrayAsync(this.CancellationToken);
     await base.OnInitializedAsync();
   }
 
@@ -98,7 +98,7 @@
     var team = await this.DbContext.Teams
       .Include(t => t.Members)
       .Include(t => t.ResourceModifiers)
-      .SingleAsync(t => t == this.data.Team);
+      .SingleAsync(t => t == this.data.Team, this.CancellationToken);
 
     var iterationStartDate = DateOnly.FromDateTime(this.data.StartProject!.Value);
     for (var i = 1; i <= this.data.SprintsCount; i++)

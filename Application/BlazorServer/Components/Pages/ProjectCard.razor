@@ -2,12 +2,15 @@
 @page "/projects/{Id}"
 
 @using Microsoft.EntityFrameworkCore
+@using TauResourceCalculator.Application.BlazorServer.Context
 @using TauResourceCalculator.Application.BlazorServer.Services
 @using TauResourceCalculator.Domain.ResourceCalculator.Models
 @using TauResourceCalculator.Infrastructure.Data
 
 @inject ApplicationDbContext DbContext
-@inject XlsxReportService xlsxReportService
+@inject NavigationManager NavigationManager
+@inject XlsxReportService XlsxReportService
+@inject DownloadFileContext DownloadFileContext
 
 <PageTitle>@this.PageTitle</PageTitle>
 
@@ -83,8 +86,8 @@ else
         </MudTable>
       </MudForm>
     </MudCardContent>
-    <MudButton OnClick="this.HandleExportReportClick">Export Report</MudButton>
   </MudCard>
+  <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@this.HandleExportReportClick">Export Report</MudButton>
 }
 
 @code {
@@ -101,13 +104,13 @@ else
     if (this.Id is null)
     {
       this.project = new Project() { Name = "Project", Version = "42" };
-      var entity = await this.DbContext.Projects.AddAsync(this.project!);
+      var entity = await this.DbContext.Projects.AddAsync(this.project!, this.CancellationToken);
       this.Id = entity.Entity.Id.ToString();
-      await this.DbContext.SaveChangesAsync();
+      await this.DbContext.SaveChangesAsync(this.CancellationToken);
     }
     else if (Guid.TryParse(this.Id, out var id))
     {
-      this.project = await this.DbContext.Projects.Include(t => t.Sprints).FirstOrDefaultAsync(p => p.Id == id);
+      this.project = await this.DbContext.Projects.Include(t => t.Sprints).FirstOrDefaultAsync(p => p.Id == id, this.CancellationToken);
     }
 
     await base.OnInitializedAsync();
@@ -121,20 +124,22 @@ else
   private async Task HandleAddSprintButtonClick()
   {
     this.project?.Sprints.Add(new Sprint() { Name = "Iteration ", Project = this.project });
-    await this.DbContext.SaveChangesAsync();
+    await this.DbContext.SaveChangesAsync(this.CancellationToken);
   }
 
   private async Task HandleDeleteSprintButtonClick(Sprint sprint)
   {
     this.project?.Sprints.Remove(sprint);
-    await this.DbContext.SaveChangesAsync();
+    await this.DbContext.SaveChangesAsync(this.CancellationToken);
   }
 
   private async Task HandleExportReportClick()
   {
     if (this.project != null)
     {
-      var report = await this.xlsxReportService.BuildReport(this.project, this.CancellationToken);
+      var report = await this.XlsxReportService.BuildReport(this.project, this.CancellationToken);
+      var url = this.DownloadFileContext.CreateUri(report, "report.xlsx");
+      this.NavigationManager.NavigateTo(url, true, false);
     }
   }
 }
