@@ -24,7 +24,8 @@ internal sealed class XlsxReportService
       var projectResourcesReportInfo = await projectResourcesWritter.Write(project, resourceDetailsReportInfo, cancellationToken);
 
       var featureResourcesWorksheet = excelPackage.Workbook.Worksheets.Add("Планирование фич");
-#warning Undone!
+      var featureResourcesWritter = new FeatureResourcesWorksheetWritter(featureResourcesWorksheet);
+      await featureResourcesWritter.Write(project, projectResourcesReportInfo, cancellationToken);
 
       foreach (var sprint in project.Sprints.OrderBy(s => s.Start))
         _ = await this.AddSprintWorksheets(excelPackage, sprint, projectResourcesReportInfo, cancellationToken);
@@ -32,6 +33,10 @@ internal sealed class XlsxReportService
       // увы.
       var stream = new MemoryStream();
       await excelPackage.SaveAsAsync(stream, cancellationToken);
+
+#if DEBUG
+      await excelPackage.SaveAsAsync("./test.xlsx", cancellationToken);
+#endif
 
       stream.Position = 0;
       return stream;
@@ -47,6 +52,8 @@ internal sealed class XlsxReportService
     cancellationToken.ThrowIfCancellationRequested();
 
     var worksheet = excelPackage.Workbook.Worksheets.Add(sprint.Name);
+    var sprintWorksheetWritter = new SprintWorksheetWritter(worksheet);
+    await sprintWorksheetWritter.Write(sprint, projectResourcesReportInfo, cancellationToken);
 
     return worksheet;
   }

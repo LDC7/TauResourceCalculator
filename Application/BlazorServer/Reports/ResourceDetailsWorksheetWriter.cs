@@ -39,6 +39,7 @@ internal sealed class ResourceDetailsWorksheetWriter
     await this.WriteResourcesPerMembers(project, cancellationToken);
     await this.WriteResourcesPerType(project, cancellationToken);
 
+    this.worksheet.Cells.Style.Font.Size = 12;
     this.worksheet.Columns.AutoFit();
 
     return this.reportInfo;
