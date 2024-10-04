@@ -16,5 +16,5 @@ public class Sprint : IIdentifiable
 
   public DateOnly End { get; set; }
 
-  public virtual ICollection<SprintEntry> Entries { get; set; } = new List<SprintEntry>();
+  public virtual ICollection<SprintResourceModifier> ResourceModifiers { get; set; } = new List<SprintResourceModifier>();
 }

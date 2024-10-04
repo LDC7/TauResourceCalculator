@@ -14,6 +14,8 @@ public class Project : IIdentifiable
 
   public DateTime Created { get; set; } = DateTime.UtcNow;
 
+  public virtual ICollection<Participant> Participants { get; set; } = new List<Participant>();
+
   public virtual ICollection<Sprint> Sprints { get; set; } = new List<Sprint>();
 
   public override string ToString()

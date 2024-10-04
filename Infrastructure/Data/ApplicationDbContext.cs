@@ -27,9 +27,11 @@ public abstract class ApplicationDbContext : DbContext
   {
     builder
       .ApplyConfiguration(new TeamEntityConfiguration())
-      .ApplyConfiguration(new ResourceModifierEntityConfiguration())
+      .ApplyConfiguration(new TeamResourceModifierEntityConfiguration())
       .ApplyConfiguration(new ProjectEntityConfiguration())
-      .ApplyConfiguration(new SprintEntityConfiguration());
+      .ApplyConfiguration(new ParticipantEntityConfiguration())
+      .ApplyConfiguration(new SprintEntityConfiguration())
+      .ApplyConfiguration(new SprintResourceModifierEntityConfiguration());
 
     SetupIdentifiableKey(builder);
     ApplyTPCStrategyToIdentifiableEntities(builder);

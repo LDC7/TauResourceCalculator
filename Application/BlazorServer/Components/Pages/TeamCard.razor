@@ -114,10 +114,10 @@ else
             <MudTh />
           </HeaderContent>
           <RowTemplate>
-            <MudTd DataLabel="@nameof(ResourceModifier.Day)">
+            <MudTd DataLabel="@nameof(TeamResourceModifier.Day)">
               <MudSelect @bind-Value="context.Day"
                          T="DayOfWeek?"
-                         Label="@nameof(ResourceModifier.Day)"
+                         Label="@nameof(TeamResourceModifier.Day)"
                          AnchorOrigin="Origin.BottomCenter">
                 <MudSelectItem T="DayOfWeek?" Value="null">empty</MudSelectItem>
                 <MudSelectItem T="DayOfWeek?" Value="@DayOfWeek.Monday" />
@@ -129,10 +129,10 @@ else
                 <MudSelectItem T="DayOfWeek?" Value="@DayOfWeek.Sunday" />
               </MudSelect>
             </MudTd>
-            <MudTd DataLabel="@nameof(ResourceModifier.Member)">
+            <MudTd DataLabel="@nameof(TeamResourceModifier.Member)">
               <MudSelect @bind-Value="context.Member"
                          T="Member"
-                         Label="@nameof(ResourceModifier.Member)"
+                         Label="@nameof(TeamResourceModifier.Member)"
                          AnchorOrigin="Origin.BottomCenter">
                 @foreach (var teamMember in this.team.Members)
                 {
@@ -140,10 +140,10 @@ else
                 }
               </MudSelect>
             </MudTd>
-            <MudTd DataLabel="@nameof(ResourceModifier.Operation)">
+            <MudTd DataLabel="@nameof(TeamResourceModifier.Operation)">
               <MudSelect @bind-Value="context.Operation"
                          T="ResourceModifierOperation"
-                         Label="@nameof(ResourceModifier.Operation)"
+                         Label="@nameof(TeamResourceModifier.Operation)"
                          AnchorOrigin="Origin.BottomCenter">
                 <MudSelectItem T="ResourceModifierOperation" Value="@ResourceModifierOperation.Addition" />
                 <MudSelectItem T="ResourceModifierOperation" Value="@ResourceModifierOperation.Multiplication" />
@@ -151,10 +151,10 @@ else
                 <MudSelectItem T="ResourceModifierOperation" Value="@ResourceModifierOperation.Division" />
               </MudSelect>
             </MudTd>
-            <MudTd DataLabel="@nameof(ResourceModifier.Resource)">
+            <MudTd DataLabel="@nameof(TeamResourceModifier.Resource)">
               <MudNumericField @bind-Value="context.Resource"
                                Required="true"
-                               Label="@nameof(ResourceModifier.Resource)"
+                               Label="@nameof(TeamResourceModifier.Resource)"
                                Margin="Margin.Dense" />
             </MudTd>
             <MudTd>
@@ -211,11 +211,11 @@ else
 
   private Task HandleAddModifierButtonClick()
   {
-    this.team?.ResourceModifiers.Add(new ResourceModifier() { Team = this.team, Operation = ResourceModifierOperation.Subtraction, Resource = 0 });
+    this.team?.ResourceModifiers.Add(new TeamResourceModifier() { Team = this.team, Operation = ResourceModifierOperation.Subtraction, Resource = 0 });
     return Task.CompletedTask;
   }
 
-  private Task HandleDeleteModifierButtonClick(ResourceModifier modifier)
+  private Task HandleDeleteModifierButtonClick(TeamResourceModifier modifier)
   {
     this.team?.ResourceModifiers.Remove(modifier);
     return Task.CompletedTask;

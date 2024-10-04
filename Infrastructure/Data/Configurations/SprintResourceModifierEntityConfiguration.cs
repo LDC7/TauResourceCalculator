@@ -4,12 +4,11 @@ using TauResourceCalculator.Domain.ResourceCalculator.Models;
 
 namespace TauResourceCalculator.Infrastructure.Data.Configurations;
 
-internal sealed class SprintEntityConfiguration : IEntityTypeConfiguration<Sprint>
+internal sealed class SprintResourceModifierEntityConfiguration : IEntityTypeConfiguration<SprintResourceModifier>
 {
-  public void Configure(EntityTypeBuilder<Sprint> builder)
+  public void Configure(EntityTypeBuilder<SprintResourceModifier> builder)
   {
     builder
-      .HasMany(e => e.ResourceModifiers)
-      .WithOne(e => e.Sprint);
+      .HasOne(e => e.Participant);
   }
 }

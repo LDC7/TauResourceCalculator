@@ -4,9 +4,9 @@ using TauResourceCalculator.Domain.ResourceCalculator.Models;
 
 namespace TauResourceCalculator.Infrastructure.Data.Configurations;
 
-internal sealed class ResourceModifierEntityConfiguration : IEntityTypeConfiguration<ResourceModifier>
+internal sealed class TeamResourceModifierEntityConfiguration : IEntityTypeConfiguration<TeamResourceModifier>
 {
-  public void Configure(EntityTypeBuilder<ResourceModifier> builder)
+  public void Configure(EntityTypeBuilder<TeamResourceModifier> builder)
   {
     builder
       .HasOne(e => e.Member);
