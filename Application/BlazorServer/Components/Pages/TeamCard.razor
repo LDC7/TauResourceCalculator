@@ -3,7 +3,6 @@
 
 @using Microsoft.EntityFrameworkCore
 @using TauResourceCalculator.Domain.ResourceCalculator.Models
-@using TauResourceCalculator.Domain.ResourceCalculator.Services
 @using TauResourceCalculator.Infrastructure.Data
 
 @inject ApplicationDbContext DbContext
@@ -96,6 +95,7 @@ else
             <col style="width: 150px;" />
             <col style="width: 80px;" />
             <col style="width: 80px;" />
+            <col style="width: 80px;" />
             <col style="width: 55px;" />
           </ColGroup>
           <HeaderContent>
@@ -104,6 +104,9 @@ else
             </MudTh>
             <MudTh>
               Участник
+            </MudTh>
+            <MudTh>
+              Индекс недели
             </MudTh>
             <MudTh>
               Операция
@@ -140,15 +143,20 @@ else
                 }
               </MudSelect>
             </MudTd>
+            <MudTd DataLabel="@nameof(TeamResourceModifier.WeekIndex)">
+              <MudNumericField @bind-Value="context.WeekIndex"
+                               Label="@nameof(TeamResourceModifier.WeekIndex)"
+                               Margin="Margin.Dense" />
+            </MudTd>
             <MudTd DataLabel="@nameof(TeamResourceModifier.Operation)">
               <MudSelect @bind-Value="context.Operation"
                          T="ResourceModifierOperation"
                          Label="@nameof(TeamResourceModifier.Operation)"
                          AnchorOrigin="Origin.BottomCenter">
-                <MudSelectItem T="ResourceModifierOperation" Value="@ResourceModifierOperation.Addition" />
-                <MudSelectItem T="ResourceModifierOperation" Value="@ResourceModifierOperation.Multiplication" />
-                <MudSelectItem T="ResourceModifierOperation" Value="@ResourceModifierOperation.Subtraction" />
-                <MudSelectItem T="ResourceModifierOperation" Value="@ResourceModifierOperation.Division" />
+                <MudSelectItem T="ResourceModifierOperation" Value="@ResourceModifierOperation.Addition">+</MudSelectItem>
+                <MudSelectItem T="ResourceModifierOperation" Value="@ResourceModifierOperation.Multiplication">*</MudSelectItem>
+                <MudSelectItem T="ResourceModifierOperation" Value="@ResourceModifierOperation.Subtraction">-</MudSelectItem>
+                <MudSelectItem T="ResourceModifierOperation" Value="@ResourceModifierOperation.Division">/</MudSelectItem>
               </MudSelect>
             </MudTd>
             <MudTd DataLabel="@nameof(TeamResourceModifier.Resource)">

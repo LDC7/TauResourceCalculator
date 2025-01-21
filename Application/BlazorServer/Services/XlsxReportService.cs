@@ -27,6 +27,8 @@ internal sealed class XlsxReportService
       var featureResourcesWritter = new FeatureResourcesWorksheetWritter(featureResourcesWorksheet);
       await featureResourcesWritter.Write(project, projectResourcesReportInfo, cancellationToken);
 
+      excelPackage.Workbook.Worksheets.Add("Зависимости и риски");
+
       foreach (var sprint in project.Sprints.OrderBy(s => s.Start))
         _ = await this.AddSprintWorksheets(excelPackage, sprint, projectResourcesReportInfo, cancellationToken);
 

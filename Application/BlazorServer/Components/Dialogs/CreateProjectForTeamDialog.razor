@@ -1,11 +1,10 @@
 ﻿@using Microsoft.EntityFrameworkCore
+@using TauResourceCalculator.Domain.ResourceCalculator.Builders
 @using TauResourceCalculator.Domain.ResourceCalculator.Models
-@using TauResourceCalculator.Domain.ResourceCalculator.Services
 @using TauResourceCalculator.Domain.ResourceCalculator.Utils
 @using TauResourceCalculator.Infrastructure.Data
 
 @inject ApplicationDbContext DbContext
-@inject SprintService SprintService
 
 <MudDialog>
   <DialogContent>
@@ -62,7 +61,7 @@
   private Team[] teams = Array.Empty<Team>();
 
   [CascadingParameter]
-  public required MudDialogInstance MudDialog { get; set; }
+  public required IMudDialogInstance MudDialog { get; set; }
 
   protected override async Task OnInitializedAsync()
   {
@@ -84,48 +83,12 @@
       return;
     }
 
-    await this.BuildSprints();
+    this.MudDialog.Close<Data>(this.data);
   }
 
   private void HandleCancelClick()
   {
     this.MudDialog.Cancel();
-  }
-
-  private async Task BuildSprints()
-  {
-    this.data.Sprints.Clear();
-    var team = await this.DbContext.Teams
-      .Include(t => t.Members)
-      .Include(t => t.ResourceModifiers)
-      .SingleAsync(t => t == this.data.Team, this.CancellationToken);
-
-    var iterationStartDate = DateOnly.FromDateTime(this.data.StartProject!.Value);
-    for (var i = 1; i <= this.data.SprintsCount; i++)
-    {
-      var sprint = new Sprint()
-        {
-          Name = this.SprintService.GenerateSprintName(this.data.Version!, i, this.data.SprintsCount),
-          Start = iterationStartDate,
-          End = DateUtils.FindNextSunday(iterationStartDate, this.data.WeeksPerSprint),
-          Project = null!
-        };
-
-      iterationStartDate = sprint.End.AddDays(1);
-
-      foreach (var member in team.Members)
-        this.SprintService.FillEntriesByMember(sprint, member);
-
-      this.data.Sprints.Add(sprint);
-    }
-
-    this.MudDialog.Close<Data>(this.data);
-  }
-
-  private Task HandleDeleteSprintButtonClick(Sprint sprint)
-  {
-    this.data.Sprints.Remove(sprint);
-    return Task.CompletedTask;
   }
 
   public sealed class Data
@@ -136,10 +99,8 @@
 
     public int WeeksPerSprint { get; set; } = 2;
 
-    public int SprintsCount { get; set; } = 5;
+    public int SprintsCount { get; set; } = 7;
 
     public DateTime? StartProject { get; set; }
-
-    public ICollection<Sprint> Sprints { get; set; } = new List<Sprint>();
   }
 }

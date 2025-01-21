@@ -16,13 +16,15 @@ using TauResourceCalculator.Application.BlazorServer.Extensions;
 using TauResourceCalculator.Application.BlazorServer.Services;
 using TauResourceCalculator.Application.BlazorServer.Settings;
 using TauResourceCalculator.Common.Abstractions;
-using TauResourceCalculator.Domain.ResourceCalculator.Services;
 using TauResourceCalculator.Infrastructure.Data;
 
 namespace TauResourceCalculator;
 
 public sealed class Program
 {
+  private const string DefaultSettingsFileName = "appsettings.json";
+  private const string ExampleSettingsFileName = "appsettings.example.json";
+
   internal static string CurrentDirectory { get; } = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
 
   public static async Task Main(string[] args)
@@ -46,7 +48,12 @@ public sealed class Program
 
     var settingsPath = args.FirstOrDefault();
     if (settingsPath == null || !File.Exists(settingsPath))
-      settingsPath = "appsettings.json";
+      settingsPath = DefaultSettingsFileName;
+
+    if (settingsPath == DefaultSettingsFileName && !File.Exists(settingsPath) && File.Exists(ExampleSettingsFileName))
+    {
+      File.Copy(ExampleSettingsFileName, settingsPath, false);
+    }
 
     var configuration = builder.Configuration
       .SetBasePath(CurrentDirectory)
@@ -64,7 +71,6 @@ public sealed class Program
 
     builder.Services
       .AddSingleton<DownloadFileContext>()
-      .AddScoped<SprintService>()
       .AddTransient(typeof(IRepository<>), typeof(EntityFrameworkRepository<>))
       .AddTransient<XlsxReportService>();
 

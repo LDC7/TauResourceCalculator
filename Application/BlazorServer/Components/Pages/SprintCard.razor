@@ -22,10 +22,10 @@ else
     <MudCardContent>
       <MudForm Model="this.sprint" @ref="this.sprintFormRef">
         <MudTextField @bind-Value="this.sprint.Name"
-                      Typo="Typo.h5"
-                      Required="true" Label="@nameof(Sprint.Name)"
-                      Margin="Margin.Dense"
-                      Variant="Variant.Text" />
+        Typo="Typo.h5"
+        Required="true" Label="@nameof(Sprint.Name)"
+        Margin="Margin.Dense"
+        Variant="Variant.Text" />
         <br />
         <MudText>Ресурсы:</MudText>
         <MudTable Items="@this.rows" Hover="true">
@@ -62,37 +62,38 @@ else
   [Parameter]
   public string? Id { get; set; }
 
-  protected override async Task OnInitializedAsync()
-  {
-    if (Guid.TryParse(this.Id, out var id))
-    {
-      this.sprint = await this.DbContext.Sprints.Include(s => s.Entries).FirstOrDefaultAsync(p => p.Id == id, this.CancellationToken);
-      if (this.sprint != null)
+  /*
+    protected override async Task OnInitializedAsync()
       {
+      if (Guid.TryParse(this.Id, out var id))
+      {
+      this.sprint = await this.DbContext.Sprints.Include(s => s.Entries).FirstOrDefaultAsync(p => p.Id == id, this.CancellationToken);
+        if (this.sprint != null)
+        {
         this.columns = this.sprint.Entries.Select(e => e.Date).Distinct().ToArray();
-        this.rows = GetRowsFromEntries(this.sprint);
-      }
+      this.rows = GetRowsFromEntries(this.sprint);
+    }
     }
 
     await base.OnInitializedAsync();
   }
 
   private static IReadOnlyCollection<DataRow> GetRowsFromEntries(Sprint sprint)
-  {
-    return sprint.Entries
-      .GroupBy(e => e.Name)
-      .Select(g =>
       {
+      return sprint.Entries
+      .GroupBy(e => e.Name)
+        .Select(g =>
+        {
         var first = g.First();
-        return new DataRow()
-          {
+          return new DataRow()
+            {
             Name = first.Name,
             ResourceType = first.ResourceType,
             Entries = g.ToArray()
-          };
+      };
       })
       .ToArray();
-  }
+  }*/
 
   private sealed class DataRow
   {
@@ -100,11 +101,13 @@ else
 
     public ResourceType ResourceType { get; set; }
 
-    public ICollection<SprintEntry> Entries { get; set; } = Array.Empty<SprintEntry>();
+    //public ICollection<SprintEntry> Entries { get; set; } = Array.Empty<SprintEntry>();
 
     public double? GetResourceForDate(DateOnly date)
     {
-      return this.Entries?.FirstOrDefault(e => e.Date == date)?.Resource;
-    }
+      return null;
+      //return this.Entries?.FirstOrDefault(e => e.Date == date)?.Resource;
+   
   }
+}
 }

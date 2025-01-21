@@ -70,7 +70,7 @@ internal sealed class ProjectResourcesWorksheetWritter
             var сell = this.worksheet.Cells[this.currentRowIndex, i + sprintColumnIndexOffset];
             сell.Formula = $"'{resourceDetailsReportInfo.Worksheet.Name}'!{sprintResourceCell.Address} * {this.focusCell.Address}";
 
-            resourceTypeInfo.ResourcePerSprint.Add(sprintInfo.SprintId, сell.Start);
+            resourceTypeInfo.ResourcePerSprint.Add(sprintInfo.SprintId, new() { CellAddress = сell.Start });
           }
         }
       }
@@ -94,12 +94,15 @@ internal sealed class ProjectResourcesWorksheetWritter
         {
           var sprint = sprints[i];
           var sprintInfo = resourceDetailsReportInfo.SprintsInfo.FirstOrDefault(s => s.SprintId == sprint.Id);
-          if (sprintInfo != null && resourceTypeInfo.ResourcePerSprint.TryGetValue(sprintInfo.SprintId, out var resourceCell))
+          if (sprintInfo != null && resourceTypeInfo.ResourcePerSprint.TryGetValue(sprintInfo.SprintId, out var resourceInfo))
           {
-            var сell = this.worksheet.Cells[this.currentRowIndex, i + sprintColumnIndexOffset];
-            сell.Formula = $"{resourceCell.Address} * {workTypeItem.MultiplierCell.Address}";
+            var cell = this.worksheet.Cells[this.currentRowIndex, i + sprintColumnIndexOffset];
+            cell.Formula = $"{resourceInfo.CellAddress.Address} * {workTypeItem.MultiplierCell.Address}";
+
+            resourceInfo.ResourcePerWorkType.Add(workTypeItem, cell.Start);
           }
         }
+
         this.currentRowIndex++;
       }
       this.currentRowIndex++;
@@ -110,15 +113,6 @@ internal sealed class ProjectResourcesWorksheetWritter
     sprintColumns.SetMaxWidth();
 
     return this.reportInfo;
-  }
-
-  private Task FixStyles(IReadOnlyCollection<ExcelRangeColumn> sprintColumns)
-  {
-    var maxWidth = sprintColumns.Max(c => c.Width);
-    foreach (var column in sprintColumns)
-      column.Width = maxWidth;
-
-    return Task.CompletedTask;
   }
 
   private Task FillWorkTypeItems()
@@ -160,7 +154,14 @@ internal sealed class ProjectResourcesWorksheetWritter
 
   internal sealed record ResourceTypeInfo(string Name)
   {
-    public IDictionary<Guid, ExcelCellAddress> ResourcePerSprint { get; } = new Dictionary<Guid, ExcelCellAddress>(7);
+    public IDictionary<Guid, ResourceInfoPerSprint> ResourcePerSprint { get; } = new Dictionary<Guid, ResourceInfoPerSprint>(7);
+  }
+
+  internal sealed record ResourceInfoPerSprint()
+  {
+    public ExcelCellAddress CellAddress { get; set; }
+
+    public IDictionary<WorkTypeInfo, ExcelCellAddress> ResourcePerWorkType { get; } = new Dictionary<WorkTypeInfo, ExcelCellAddress>(5);
   }
 
   internal sealed record WorkTypeInfo(string Name, double? Value)

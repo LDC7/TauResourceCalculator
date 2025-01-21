@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Drawing;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using OfficeOpenXml;
@@ -45,7 +47,7 @@ internal sealed class ResourceDetailsWorksheetWriter
     return this.reportInfo;
   }
 
-  private Task WriteSprint(Sprint sprint, CancellationToken cancellationToken)
+  private async Task WriteSprint(Sprint sprint, CancellationToken cancellationToken)
   {
     cancellationToken.ThrowIfCancellationRequested();
     var sprintResourceTypeRowIndexMap = new Dictionary<ResourceType, HashSet<int>>(2);
@@ -56,7 +58,7 @@ internal sealed class ResourceDetailsWorksheetWriter
     titleCell.Style.Font.Bold = true;
     titleCell.Style.Fill.PatternType = ExcelFillStyle.Solid;
     titleCell.Style.Fill.BackgroundColor.SetColor(Color.LightSkyBlue);
-    var columnIndex = 3;
+    var columnIndex = 4;
     for (var date = sprint.Start; date <= sprint.End; date = date.AddDays(1))
     {
       this.worksheet.Cells[this.currentRowIndex, columnIndex].Value = date.ToString("dd.MM.yyyy");
@@ -64,32 +66,33 @@ internal sealed class ResourceDetailsWorksheetWriter
     }
     this.currentRowIndex++;
 
-    var resourcesPerMembers = sprint.Entries
-      .GroupBy(e => e.Name)
-      .ToDictionary(g => g.Key, g => g.ToArray());
-    foreach (var item in resourcesPerMembers)
+    var participants = sprint.Project.Participants
+      .OrderBy(p => p.ResourceType)
+      .ThenBy(p => p.Name)
+      .ToImmutableArray();
+
+    foreach (var participant in participants)
     {
-      this.membersRowIndexMap.AddToCollection(item.Key, this.currentRowIndex);
-      var resourceType = item.Value.FirstOrDefault()?.ResourceType;
-      if (resourceType != null)
-      {
-        this.resourceTypeRowIndexMap.AddToCollection(resourceType.Value, this.currentRowIndex);
-        sprintResourceTypeRowIndexMap.AddToCollection(resourceType.Value, this.currentRowIndex);
-      }
+      this.membersRowIndexMap.AddToCollection(participant.Name, this.currentRowIndex);
+      sprintResourceTypeRowIndexMap.AddToCollection(participant.ResourceType, this.currentRowIndex);
 
-      this.worksheet.Cells[this.currentRowIndex, 1].Value = item.Key;
-      var memberResourceCell = this.worksheet.Cells[this.currentRowIndex, 2];
-      memberResourceCell.Formula = $"SUM(C{this.currentRowIndex}:CZ{this.currentRowIndex})";
-      sprintInfo.MembersResourceCells.Add(item.Key, memberResourceCell.Start);
+      var memberNameCell = this.worksheet.Cells[this.currentRowIndex, 1];
+      memberNameCell.Value = participant.Name;
+      memberNameCell.Style.Font.Italic = true;
 
-      columnIndex = 3;
+      var memberResourceSumCell = this.worksheet.Cells[this.currentRowIndex, 2];
+      memberResourceSumCell.Formula = $"SUM(D{this.currentRowIndex}:CZ{this.currentRowIndex})";
+      memberResourceSumCell.Style.Font.Italic = true;
+
+      var memberDefaultResourceCell = this.worksheet.Cells[this.currentRowIndex, 3];
+      memberDefaultResourceCell.Value = participant.Resource;
+      memberDefaultResourceCell.Style.Font.Italic = true;
+
+      columnIndex = 4;
       for (var date = sprint.Start; date <= sprint.End; date = date.AddDays(1))
       {
-        var entry = item.Value.FirstOrDefault(e => e.Date == date);
-        if (entry != null)
-        {
-          this.worksheet.Cells[this.currentRowIndex, columnIndex].Value = entry.Resource;
-        }
+        var dateResource = this.worksheet.Cells[this.currentRowIndex, columnIndex];
+        dateResource.Formula = await this.CalculateResourceFormulaForDate(date, sprint, participant);
 
         columnIndex++;
       }
@@ -109,6 +112,8 @@ internal sealed class ResourceDetailsWorksheetWriter
       valueCell.Style.Font.Bold = true;
       sprintInfo.ResourceTypeCells.Add(row.Key, valueCell.Start);
 
+      this.resourceTypeRowIndexMap.AddToCollection(row.Key, this.currentRowIndex);
+
       this.currentRowIndex++;
     }
 
@@ -117,7 +122,7 @@ internal sealed class ResourceDetailsWorksheetWriter
     totalCell.Style.Font.Bold = true;
 
     var totalValueCell = this.worksheet.Cells[this.currentRowIndex, 2];
-    var firstSprintResourceTypeRowIndex = this.currentRowIndex - sprintResourceTypeRowIndexMap.Count - 1;
+    var firstSprintResourceTypeRowIndex = this.currentRowIndex - sprintResourceTypeRowIndexMap.Count;
     var lastSprintResourceTypeRowIndex = this.currentRowIndex - 1;
     totalValueCell.Formula = $"SUM(B{firstSprintResourceTypeRowIndex}:B{lastSprintResourceTypeRowIndex})";
     totalValueCell.Style.Font.Bold = true;
@@ -126,7 +131,40 @@ internal sealed class ResourceDetailsWorksheetWriter
 
     this.reportInfo?.SprintsInfo.Add(sprintInfo);
     this.currentRowIndex++;
-    return Task.CompletedTask;
+  }
+
+  private Task<string> CalculateResourceFormulaForDate(DateOnly date, Sprint sprint, Participant participant)
+  {
+    var modifiers = sprint.ResourceModifiers
+      .Where(m => (m.Participant == null || m.Participant == participant) && date >= m.Start && date <= m.End)
+      .OrderByDescending(m => (int)m.Operation)
+      .ToImmutableArray();
+
+    // HACK: если есть умножение на 0, то всё игнорим.
+    if (modifiers.Any(m => m.Resource == 0 && m.Operation == ResourceModifierOperation.Multiplication))
+      return Task.FromResult("0");
+
+    var sb = new StringBuilder($"C{this.currentRowIndex}");
+
+    sb = sb.Insert(0, "(", modifiers.Length);
+    foreach (var modifier in modifiers.Where(m => m.Operation == ResourceModifierOperation.Multiplication))
+    {
+      var @operator = modifier.Operation switch
+      {
+        ResourceModifierOperation.Division => " / ",
+        ResourceModifierOperation.Multiplication => " * ",
+        ResourceModifierOperation.Subtraction => " - ",
+        ResourceModifierOperation.Addition => " + ",
+        _ => throw new NotImplementedException()
+      };
+
+      sb = sb
+        .Append(@operator)
+        .Append(modifier)
+        .Append(')');
+    }
+
+    return Task.FromResult(sb.ToString());
   }
 
   private Task WriteResourcesPerMembers(Project project, CancellationToken cancellationToken)
@@ -150,7 +188,6 @@ internal sealed class ResourceDetailsWorksheetWriter
       var cells = row.Value.Select(i => $"B{i}");
       valueCell.Formula = $"SUM({string.Join(',', cells)})";
       valueCell.Style.Font.Bold = true;
-      this.reportInfo?.MembersResourceCells.Add(row.Key, valueCell.Start);
 
       this.currentRowIndex++;
     }
@@ -191,8 +228,6 @@ internal sealed class ResourceDetailsWorksheetWriter
 
   internal sealed record ReportInfo(ExcelWorksheet Worksheet)
   {
-    public IDictionary<string, ExcelCellAddress> MembersResourceCells { get; } = new Dictionary<string, ExcelCellAddress>(10);
-
     public IDictionary<ResourceType, ExcelCellAddress> ResourceTypeCells { get; } = new Dictionary<ResourceType, ExcelCellAddress>(2);
 
     public ICollection<SprintReportInfo> SprintsInfo { get; } = new List<SprintReportInfo>(7);
@@ -203,8 +238,6 @@ internal sealed class ResourceDetailsWorksheetWriter
     public Guid SprintId { get; init; }
 
     public ExcelCellAddress TotalResourceCell { get; set; }
-
-    public IDictionary<string, ExcelCellAddress> MembersResourceCells { get; } = new Dictionary<string, ExcelCellAddress>(10);
 
     public IDictionary<ResourceType, ExcelCellAddress> ResourceTypeCells { get; } = new Dictionary<ResourceType, ExcelCellAddress>(2);
   }

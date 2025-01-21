@@ -11,14 +11,14 @@ using TauResourceCalculator.Infrastructure.Data.SQLite;
 namespace TauResourceCalculator.Infrastructure.Data.SQLite.Migrations
 {
     [DbContext(typeof(ApplicationSQLiteDbContext))]
-    [Migration("20240826141059_Initial")]
+    [Migration("20250120125650_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.12");
 
             modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.Member", b =>
                 {
@@ -48,6 +48,39 @@ namespace TauResourceCalculator.Infrastructure.Data.SQLite.Migrations
                     b.UseTpcMappingStrategy();
                 });
 
+            modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.Participant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("MemberId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("Resource")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("ResourceType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MemberId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("Participant");
+
+                    b.UseTpcMappingStrategy();
+                });
+
             modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.Project", b =>
                 {
                     b.Property<Guid>("Id")
@@ -67,38 +100,6 @@ namespace TauResourceCalculator.Infrastructure.Data.SQLite.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Projects");
-
-                    b.UseTpcMappingStrategy();
-                });
-
-            modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.ResourceModifier", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("Day")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid?>("MemberId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Operation")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<double>("Resource")
-                        .HasColumnType("REAL");
-
-                    b.Property<Guid>("TeamId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MemberId");
-
-                    b.HasIndex("TeamId");
-
-                    b.ToTable("ResourceModifier");
 
                     b.UseTpcMappingStrategy();
                 });
@@ -130,33 +131,40 @@ namespace TauResourceCalculator.Infrastructure.Data.SQLite.Migrations
                     b.UseTpcMappingStrategy();
                 });
 
-            modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.SprintEntry", b =>
+            modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.SprintResourceModifier", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateOnly>("Date")
+                    b.Property<DateOnly>("End")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Operation")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ParticipantId")
                         .HasColumnType("TEXT");
 
                     b.Property<double>("Resource")
                         .HasColumnType("REAL");
 
-                    b.Property<string>("ResourceType")
-                        .IsRequired()
+                    b.Property<Guid>("SprintId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("SprintId")
+                    b.Property<DateOnly>("Start")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ParticipantId");
+
                     b.HasIndex("SprintId");
 
-                    b.ToTable("SprintEntry");
+                    b.ToTable("SprintResourceModifier");
 
                     b.UseTpcMappingStrategy();
                 });
@@ -177,6 +185,44 @@ namespace TauResourceCalculator.Infrastructure.Data.SQLite.Migrations
                     b.UseTpcMappingStrategy();
                 });
 
+            modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.TeamResourceModifier", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Day")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("MemberId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Operation")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("Resource")
+                        .HasColumnType("REAL");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("WeekIndex")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MemberId");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("TeamResourceModifier");
+
+                    b.UseTpcMappingStrategy();
+                });
+
             modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.Member", b =>
                 {
                     b.HasOne("TauResourceCalculator.Domain.ResourceCalculator.Models.Team", "Team")
@@ -188,7 +234,51 @@ namespace TauResourceCalculator.Infrastructure.Data.SQLite.Migrations
                     b.Navigation("Team");
                 });
 
-            modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.ResourceModifier", b =>
+            modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.Participant", b =>
+                {
+                    b.HasOne("TauResourceCalculator.Domain.ResourceCalculator.Models.Member", null)
+                        .WithMany()
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("TauResourceCalculator.Domain.ResourceCalculator.Models.Project", "Project")
+                        .WithMany("Participants")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.Sprint", b =>
+                {
+                    b.HasOne("TauResourceCalculator.Domain.ResourceCalculator.Models.Project", "Project")
+                        .WithMany("Sprints")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.SprintResourceModifier", b =>
+                {
+                    b.HasOne("TauResourceCalculator.Domain.ResourceCalculator.Models.Participant", "Participant")
+                        .WithMany()
+                        .HasForeignKey("ParticipantId");
+
+                    b.HasOne("TauResourceCalculator.Domain.ResourceCalculator.Models.Sprint", "Sprint")
+                        .WithMany("ResourceModifiers")
+                        .HasForeignKey("SprintId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Participant");
+
+                    b.Navigation("Sprint");
+                });
+
+            modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.TeamResourceModifier", b =>
                 {
                     b.HasOne("TauResourceCalculator.Domain.ResourceCalculator.Models.Member", "Member")
                         .WithMany()
@@ -205,36 +295,16 @@ namespace TauResourceCalculator.Infrastructure.Data.SQLite.Migrations
                     b.Navigation("Team");
                 });
 
-            modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.Sprint", b =>
-                {
-                    b.HasOne("TauResourceCalculator.Domain.ResourceCalculator.Models.Project", "Project")
-                        .WithMany("Sprints")
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.SprintEntry", b =>
-                {
-                    b.HasOne("TauResourceCalculator.Domain.ResourceCalculator.Models.Sprint", "Sprint")
-                        .WithMany("Entries")
-                        .HasForeignKey("SprintId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Sprint");
-                });
-
             modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.Project", b =>
                 {
+                    b.Navigation("Participants");
+
                     b.Navigation("Sprints");
                 });
 
             modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.Sprint", b =>
                 {
-                    b.Navigation("Entries");
+                    b.Navigation("ResourceModifiers");
                 });
 
             modelBuilder.Entity("TauResourceCalculator.Domain.ResourceCalculator.Models.Team", b =>

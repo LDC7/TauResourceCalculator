@@ -24,6 +24,28 @@ internal sealed class SprintWorksheetWritter
   {
     var sprintHeader = this.worksheet.Cells[1, 2];
     sprintHeader.Value = sprint.Name;
+    sprintHeader.Style.Font.Bold = true;
+    sprintHeader.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+    var availableTotalResourceHeader = this.worksheet.Cells[2, 2];
+    availableTotalResourceHeader.Value = "Ресурс:";
+    availableTotalResourceHeader.Style.Font.Bold = true;
+    availableTotalResourceHeader.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+
+    var estimatedTotalResourceHeader = this.worksheet.Cells[3, 2];
+    estimatedTotalResourceHeader.Value = "Запланировано:";
+    estimatedTotalResourceHeader.Style.Font.Bold = true;
+    estimatedTotalResourceHeader.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+
+    var availableResourceHeader = this.worksheet.Cells[5, 2];
+    availableResourceHeader.Value = "Ресурс:";
+    availableResourceHeader.Style.Font.Bold = true;
+    availableResourceHeader.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+
+    var estimatedResourceHeader = this.worksheet.Cells[6, 2];
+    estimatedResourceHeader.Value = "Запланировано:";
+    estimatedResourceHeader.Style.Font.Bold = true;
+    estimatedResourceHeader.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
 
     var resourcesInfo = projectResourcesReportInfo.ResourceTypesInfo
       .Where(t => t.Name != ProjectResourcesWorksheetWritter.TotalResourceTypeInfoTitle)
@@ -42,14 +64,24 @@ internal sealed class SprintWorksheetWritter
       var workTypeHeader = this.worksheet.Cells[1, workTypeColumnIndex, 1, workTypeLastColumnIndex];
       workTypeHeader.Merge = true;
       workTypeHeader.Value = workTypeInfo.Name;
+      workTypeHeader.Style.Font.Bold = true;
+      workTypeHeader.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
 
       var availableResourceForWorkTypeCell = this.worksheet.Cells[2, workTypeColumnIndex, 2, workTypeLastColumnIndex];
-      workTypeHeader.Merge = true;
+      availableResourceForWorkTypeCell.Merge = true;
+      availableResourceForWorkTypeCell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+      var availableResourcesForWorkTypeRange = this.worksheet.Cells[5, workTypeColumnIndex, 5, workTypeLastColumnIndex];
+      availableResourceForWorkTypeCell.Formula = $"SUM({availableResourcesForWorkTypeRange.Address})";
 
       var estimatedResourceForWorkTypeCell = this.worksheet.Cells[3, workTypeColumnIndex, 3, workTypeLastColumnIndex];
-      workTypeHeader.Merge = true;
+      estimatedResourceForWorkTypeCell.Merge = true;
+      estimatedResourceForWorkTypeCell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
       var estimatedResourcesRange = this.worksheet.Cells[6, workTypeColumnIndex, 6, workTypeLastColumnIndex];
       estimatedResourceForWorkTypeCell.Formula = $"SUM({estimatedResourcesRange.Address})";
+      var estimatedTotalFormattingRule = estimatedResourceForWorkTypeCell.ConditionalFormatting.AddGreaterThan();
+      estimatedTotalFormattingRule.Formula = availableResourceForWorkTypeCell.Start.Address;
+      estimatedTotalFormattingRule.Style.Fill.PatternType = ExcelFillStyle.Solid;
+      estimatedTotalFormattingRule.Style.Fill.BackgroundColor.SetColor(Color.Crimson);
 
       for (var j = 0; j < resourcesInfo.Length; j++)
       {
@@ -57,8 +89,13 @@ internal sealed class SprintWorksheetWritter
         var resourceTypeColumnIndex = workTypeColumnIndex + j;
         var resourceTypeHeader = this.worksheet.Cells[4, resourceTypeColumnIndex];
         resourceTypeHeader.Value = resourceTypeInfo.Name;
+        resourceTypeHeader.Style.Font.Bold = true;
+        resourceTypeHeader.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+        resourceColumns.Add(resourceTypeHeader.EntireColumn);
 
+        var availableResourceForTypeAddress = resourceTypeInfo.ResourcePerSprint[sprint.Id].ResourcePerWorkType[workTypeInfo];
         var availableResourceForTypeCell = this.worksheet.Cells[5, resourceTypeColumnIndex];
+        availableResourceForTypeCell.Formula = $"'{projectResourcesReportInfo.Worksheet.Name}'!{availableResourceForTypeAddress.Address}";
 
         var estimatedResourceForTypeCell = this.worksheet.Cells[6, resourceTypeColumnIndex];
         var estimatedRange = this.worksheet.Cells[7, resourceTypeColumnIndex, 999, resourceTypeColumnIndex];
@@ -73,6 +110,8 @@ internal sealed class SprintWorksheetWritter
     this.worksheet.Cells.Style.Font.Size = 12;
     this.worksheet.Columns.AutoFit();
     resourceColumns.SetMaxWidth();
+    this.worksheet.Columns[1].Width = 15;
+    this.worksheet.Columns[2].Width = 80;
 
     return Task.CompletedTask;
   }

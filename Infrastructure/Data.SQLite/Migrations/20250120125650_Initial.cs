@@ -80,50 +80,87 @@ namespace TauResourceCalculator.Infrastructure.Data.SQLite.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SprintEntry",
+                name: "Participant",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    SprintId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Date = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    MemberId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    ResourceType = table.Column<string>(type: "TEXT", nullable: false),
                     Resource = table.Column<double>(type: "REAL", nullable: false),
-                    ResourceType = table.Column<string>(type: "TEXT", nullable: false)
+                    ProjectId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SprintEntry", x => x.Id);
+                    table.PrimaryKey("PK_Participant", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SprintEntry_Sprints_SprintId",
-                        column: x => x.SprintId,
-                        principalTable: "Sprints",
+                        name: "FK_Participant_Member_MemberId",
+                        column: x => x.MemberId,
+                        principalTable: "Member",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Participant_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "ResourceModifier",
+                name: "TeamResourceModifier",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: true),
                     TeamId = table.Column<Guid>(type: "TEXT", nullable: false),
                     MemberId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    WeekIndex = table.Column<int>(type: "INTEGER", nullable: true),
                     Day = table.Column<int>(type: "INTEGER", nullable: true),
                     Operation = table.Column<string>(type: "TEXT", nullable: false),
                     Resource = table.Column<double>(type: "REAL", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ResourceModifier", x => x.Id);
+                    table.PrimaryKey("PK_TeamResourceModifier", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ResourceModifier_Member_MemberId",
+                        name: "FK_TeamResourceModifier_Member_MemberId",
                         column: x => x.MemberId,
                         principalTable: "Member",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_ResourceModifier_Teams_TeamId",
+                        name: "FK_TeamResourceModifier_Teams_TeamId",
                         column: x => x.TeamId,
                         principalTable: "Teams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SprintResourceModifier",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: true),
+                    SprintId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ParticipantId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    Start = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    End = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    Operation = table.Column<string>(type: "TEXT", nullable: false),
+                    Resource = table.Column<double>(type: "REAL", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SprintResourceModifier", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SprintResourceModifier_Participant_ParticipantId",
+                        column: x => x.ParticipantId,
+                        principalTable: "Participant",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_SprintResourceModifier_Sprints_SprintId",
+                        column: x => x.SprintId,
+                        principalTable: "Sprints",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -134,46 +171,64 @@ namespace TauResourceCalculator.Infrastructure.Data.SQLite.Migrations
                 column: "TeamId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ResourceModifier_MemberId",
-                table: "ResourceModifier",
+                name: "IX_Participant_MemberId",
+                table: "Participant",
                 column: "MemberId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ResourceModifier_TeamId",
-                table: "ResourceModifier",
-                column: "TeamId");
+                name: "IX_Participant_ProjectId",
+                table: "Participant",
+                column: "ProjectId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SprintEntry_SprintId",
-                table: "SprintEntry",
+                name: "IX_SprintResourceModifier_ParticipantId",
+                table: "SprintResourceModifier",
+                column: "ParticipantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SprintResourceModifier_SprintId",
+                table: "SprintResourceModifier",
                 column: "SprintId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sprints_ProjectId",
                 table: "Sprints",
                 column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TeamResourceModifier_MemberId",
+                table: "TeamResourceModifier",
+                column: "MemberId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TeamResourceModifier_TeamId",
+                table: "TeamResourceModifier",
+                column: "TeamId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ResourceModifier");
+                name: "SprintResourceModifier");
 
             migrationBuilder.DropTable(
-                name: "SprintEntry");
+                name: "TeamResourceModifier");
 
             migrationBuilder.DropTable(
-                name: "Member");
+                name: "Participant");
 
             migrationBuilder.DropTable(
                 name: "Sprints");
 
             migrationBuilder.DropTable(
-                name: "Teams");
+                name: "Member");
 
             migrationBuilder.DropTable(
                 name: "Projects");
+
+            migrationBuilder.DropTable(
+                name: "Teams");
         }
     }
 }

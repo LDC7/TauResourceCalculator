@@ -110,7 +110,10 @@ else
     }
     else if (Guid.TryParse(this.Id, out var id))
     {
-      this.project = await this.DbContext.Projects.Include(t => t.Sprints).FirstOrDefaultAsync(p => p.Id == id, this.CancellationToken);
+      this.project = await this.DbContext.Projects
+        .Include(p => p.Sprints)
+        .Include(p => p.Participants)
+        .FirstOrDefaultAsync(p => p.Id == id, this.CancellationToken);
     }
 
     await base.OnInitializedAsync();

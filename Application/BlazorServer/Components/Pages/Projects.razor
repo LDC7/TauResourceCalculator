@@ -2,6 +2,7 @@
 
 @using Microsoft.EntityFrameworkCore
 @using TauResourceCalculator.Application.BlazorServer.Components.Dialogs
+@using TauResourceCalculator.Domain.ResourceCalculator.Builders
 @using TauResourceCalculator.Domain.ResourceCalculator.Models
 @using TauResourceCalculator.Infrastructure.Data
 
@@ -41,9 +42,9 @@ else
       </MudTd>
       <MudTd>
         <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                       Variant="Variant.Filled"
-                       Color="Color.Error" Size="Size.Small"
-                       OnClick="() => this.HandleDeleteButtonClick(context)" />
+        Variant="Variant.Filled"
+        Color="Color.Error" Size="Size.Small"
+        OnClick="() => this.HandleDeleteButtonClick(context)" />
       </MudTd>
     </RowTemplate>
     <PagerContent>
@@ -80,17 +81,10 @@ else
     {
       if (t.Result?.Data is CreateProjectForTeamDialog.Data dialogData)
       {
-        var project = new Project()
-          {
-            Name = dialogData.Team!.Name,
-            Version = dialogData.Version!
-          };
+        var projectBuilder = new ProjectBuilder(dialogData.Team!);
 
-        foreach (var sprint in dialogData.Sprints)
-        {
-          sprint.Project = project;
-          project.Sprints.Add(sprint);
-        }
+        var project = await projectBuilder
+          .Build(dialogData.Version!, DateOnly.FromDateTime(dialogData.StartProject!.Value), dialogData.WeeksPerSprint, dialogData.SprintsCount);
 
         await this.DbContext.Projects.AddAsync(project);
         await this.DbContext.SaveChangesAsync(this.CancellationToken);

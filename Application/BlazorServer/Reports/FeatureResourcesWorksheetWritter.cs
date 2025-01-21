@@ -29,12 +29,25 @@ internal sealed class FeatureResourcesWorksheetWritter
       .Where(t => t.Name != ProjectResourcesWorksheetWritter.TotalResourceTypeInfoTitle)
       .ToImmutableArray();
 
-    var featureResourceHeader = this.worksheet.Cells[3, 2];
-    featureResourceHeader.Value = "Ресурс на фичи";
+    var availableFeatureResourceHeader = this.worksheet.Cells[2, 2];
+    availableFeatureResourceHeader.Value = "Ресурс:";
+    availableFeatureResourceHeader.Style.Font.Bold = true;
+    availableFeatureResourceHeader.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+
+    var estimatedResourceSumHeader = this.worksheet.Cells[3, 2];
+    estimatedResourceSumHeader.Value = "Запланировано:";
+    estimatedResourceSumHeader.Style.Font.Bold = true;
+    estimatedResourceSumHeader.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+
+    var featureResourceHeader = this.worksheet.Cells[5, 2];
+    featureResourceHeader.Value = "Ресурс:";
     featureResourceHeader.Style.Font.Bold = true;
-    var estimatedResourceHeader = this.worksheet.Cells[4, 2];
-    estimatedResourceHeader.Value = "Запланировано";
+    featureResourceHeader.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+
+    var estimatedResourceHeader = this.worksheet.Cells[6, 2];
+    estimatedResourceHeader.Value = "Запланировано:";
     estimatedResourceHeader.Style.Font.Bold = true;
+    estimatedResourceHeader.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
 
     var sprintColumns = new List<ExcelRangeColumn>(sprints.Length * resourcesInfo.Length);
     for (var i = 0; i < sprints.Length; i++)
@@ -45,23 +58,30 @@ internal sealed class FeatureResourcesWorksheetWritter
       sprintHeader.Merge = true;
       sprintHeader.Value = sprint.Name;
       sprintHeader.Style.Font.Bold = true;
+      sprintHeader.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+      var availableResourceCells = new List<ExcelCellAddress>(resourcesInfo.Length);
+      var estimatedResourceCells = new List<ExcelCellAddress>(resourcesInfo.Length);
 
       for (var j = 0; j < resourcesInfo.Length; j++)
       {
         var info = resourcesInfo[j];
         var resourceTypeColumnIndex = sprintColumnIndex + j;
-        var resourceTypeHeader = this.worksheet.Cells[2, resourceTypeColumnIndex];
+        var resourceTypeHeader = this.worksheet.Cells[4, resourceTypeColumnIndex];
         resourceTypeHeader.Value = info.Name;
         resourceTypeHeader.Style.Font.Bold = true;
+        resourceTypeHeader.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
         sprintColumns.Add(resourceTypeHeader.EntireColumn);
 
-        if (info.ResourcePerSprint.TryGetValue(sprint.Id, out var sprintResourceCell))
+        if (info.ResourcePerSprint.TryGetValue(sprint.Id, out var sprintResourceInfo))
         {
-          var availableResourceCell = this.worksheet.Cells[3, resourceTypeColumnIndex];
-          availableResourceCell.Formula = $"'{projectResourcesReportInfo.Worksheet.Name}'!{sprintResourceCell.Address}";
+          var availableResourceCell = this.worksheet.Cells[5, resourceTypeColumnIndex];
+          availableResourceCell.Formula = $"'{projectResourcesReportInfo.Worksheet.Name}'!{sprintResourceInfo.CellAddress.Address}";
+          availableResourceCells.Add(availableResourceCell.Start);
 
-          var estimatedCell = this.worksheet.Cells[4, resourceTypeColumnIndex];
-          var estimatedRange = this.worksheet.Cells[5, resourceTypeColumnIndex, 999, resourceTypeColumnIndex];
+          var estimatedCell = this.worksheet.Cells[6, resourceTypeColumnIndex];
+          estimatedResourceCells.Add(estimatedCell.Start);
+          var estimatedRange = this.worksheet.Cells[7, resourceTypeColumnIndex, 999, resourceTypeColumnIndex];
           estimatedCell.Formula = $"SUM({estimatedRange.Address})";
           var estimatedFormattingRule = estimatedCell.ConditionalFormatting.AddGreaterThan();
           estimatedFormattingRule.Formula = availableResourceCell.Start.Address;
@@ -69,11 +89,27 @@ internal sealed class FeatureResourcesWorksheetWritter
           estimatedFormattingRule.Style.Fill.BackgroundColor.SetColor(Color.Crimson);
         }
       }
+
+      var availableTotalResourceCell = this.worksheet.Cells[2, sprintColumnIndex, 2, sprintColumnIndex + resourcesInfo.Length - 1];
+      availableTotalResourceCell.Merge = true;
+      availableTotalResourceCell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+      availableTotalResourceCell.Formula = $"SUM({string.Join(',', availableResourceCells.Select(c => c.Address))})";
+
+      var estimatedTotalResourceCell = this.worksheet.Cells[3, sprintColumnIndex, 3, sprintColumnIndex + resourcesInfo.Length - 1];
+      estimatedTotalResourceCell.Merge = true;
+      estimatedTotalResourceCell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+      estimatedTotalResourceCell.Formula = $"SUM({string.Join(',', estimatedResourceCells.Select(c => c.Address))})";
+      var estimatedTotalFormattingRule = estimatedTotalResourceCell.ConditionalFormatting.AddGreaterThan();
+      estimatedTotalFormattingRule.Formula = availableTotalResourceCell.Start.Address;
+      estimatedTotalFormattingRule.Style.Fill.PatternType = ExcelFillStyle.Solid;
+      estimatedTotalFormattingRule.Style.Fill.BackgroundColor.SetColor(Color.Crimson);
     }
 
     this.worksheet.Cells.Style.Font.Size = 12;
     this.worksheet.Columns.AutoFit();
     sprintColumns.SetMaxWidth();
+    this.worksheet.Columns[1].Width = 15;
+    this.worksheet.Columns[2].Width = 80;
 
     return Task.CompletedTask;
   }
