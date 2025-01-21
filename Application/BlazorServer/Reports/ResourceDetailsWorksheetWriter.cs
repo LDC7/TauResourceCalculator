@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -147,7 +148,7 @@ internal sealed class ResourceDetailsWorksheetWriter
     var sb = new StringBuilder($"C{this.currentRowIndex}");
 
     sb = sb.Insert(0, "(", modifiers.Length);
-    foreach (var modifier in modifiers.Where(m => m.Operation == ResourceModifierOperation.Multiplication))
+    foreach (var modifier in modifiers)
     {
       var @operator = modifier.Operation switch
       {
@@ -160,9 +161,13 @@ internal sealed class ResourceDetailsWorksheetWriter
 
       sb = sb
         .Append(@operator)
-        .Append(modifier)
+        .Append(modifier.Resource.ToString(CultureInfo.InvariantCulture))
         .Append(')');
     }
+
+    sb = sb
+      .Insert(0, "MAX(0, ")
+      .Append(')');
 
     return Task.FromResult(sb.ToString());
   }

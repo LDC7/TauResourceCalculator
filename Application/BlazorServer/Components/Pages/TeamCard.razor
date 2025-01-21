@@ -68,7 +68,8 @@ else
               </MudSelect>
             </MudTd>
             <MudTd DataLabel="@nameof(Member.Resource)">
-              <MudNumericField @bind-Value="context.Resource"
+                <MudNumericField @bind-Value="context.Resource"
+                                 Format="F1"
                                Required="true"
                                Label="@nameof(Member.Resource)"
                                Margin="Margin.Dense"
@@ -93,12 +94,16 @@ else
           <ColGroup>
             <col style="width: 150px;" />
             <col style="width: 150px;" />
+            <col style="width: 150px;" />
             <col style="width: 80px;" />
             <col style="width: 80px;" />
             <col style="width: 80px;" />
             <col style="width: 55px;" />
           </ColGroup>
           <HeaderContent>
+            <MudTh>
+              Название
+            </MudTh>
             <MudTh>
               День
             </MudTh>
@@ -117,6 +122,12 @@ else
             <MudTh />
           </HeaderContent>
           <RowTemplate>
+            <MudTd DataLabel="@nameof(TeamResourceModifier.Name)">              
+              <MudTextField @bind-Value="context.Name"
+                            Label="@nameof(TeamResourceModifier.Name)"
+                            Margin="Margin.Dense"
+                            Variant="Variant.Text" />
+            </MudTd>
             <MudTd DataLabel="@nameof(TeamResourceModifier.Day)">
               <MudSelect @bind-Value="context.Day"
                          T="DayOfWeek?"
@@ -161,6 +172,7 @@ else
             </MudTd>
             <MudTd DataLabel="@nameof(TeamResourceModifier.Resource)">
               <MudNumericField @bind-Value="context.Resource"
+                               Format="F1"
                                Required="true"
                                Label="@nameof(TeamResourceModifier.Resource)"
                                Margin="Margin.Dense" />
