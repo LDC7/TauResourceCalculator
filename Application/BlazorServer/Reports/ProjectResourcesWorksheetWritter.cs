@@ -13,6 +13,7 @@ namespace TauResourceCalculator.Application.BlazorServer.Reports;
 
 internal sealed class ProjectResourcesWorksheetWritter
 {
+  internal const string FeaturesWorkTypeName = "Фичи";
   internal const string TotalResourceTypeInfoTitle = "Total";
 
   private readonly ExcelWorksheet worksheet;
@@ -125,7 +126,7 @@ internal sealed class ProjectResourcesWorksheetWritter
 
     WorkTypeInfo[] workTypeItems =
     [
-      new("Фичи", 0.4),
+      new(FeaturesWorkTypeName, 0.4),
       new("Доработоки", 0.2),
       new("Задачи отдела", 0.1),
       new("Техдолг", 0.1),

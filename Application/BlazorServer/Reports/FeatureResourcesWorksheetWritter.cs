@@ -29,6 +29,8 @@ internal sealed class FeatureResourcesWorksheetWritter
       .Where(t => t.Name != ProjectResourcesWorksheetWritter.TotalResourceTypeInfoTitle)
       .ToImmutableArray();
 
+    var featureTypeInfo = projectResourcesReportInfo.WorkTypesInfo.First(i => i.Name == ProjectResourcesWorksheetWritter.FeaturesWorkTypeName);
+
     var availableFeatureResourceHeader = this.worksheet.Cells[2, 2];
     availableFeatureResourceHeader.Value = "Ресурс:";
     availableFeatureResourceHeader.Style.Font.Bold = true;
@@ -76,7 +78,8 @@ internal sealed class FeatureResourcesWorksheetWritter
         if (info.ResourcePerSprint.TryGetValue(sprint.Id, out var sprintResourceInfo))
         {
           var availableResourceCell = this.worksheet.Cells[5, resourceTypeColumnIndex];
-          availableResourceCell.Formula = $"'{projectResourcesReportInfo.Worksheet.Name}'!{sprintResourceInfo.CellAddress.Address}";
+          var featureAvailableResourceAddress = sprintResourceInfo.ResourcePerWorkType[featureTypeInfo].Address;
+          availableResourceCell.Formula = $"'{projectResourcesReportInfo.Worksheet.Name}'!{featureAvailableResourceAddress}";
           availableResourceCells.Add(availableResourceCell.Start);
 
           var estimatedCell = this.worksheet.Cells[6, resourceTypeColumnIndex];
