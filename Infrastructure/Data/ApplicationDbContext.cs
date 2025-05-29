@@ -3,10 +3,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Microsoft.EntityFrameworkCore.ValueGeneration;
 using TauResourceCalculator.Common.Abstractions;
 using TauResourceCalculator.Domain.ResourceCalculator.Models;
 using TauResourceCalculator.Infrastructure.Data.Configurations;
+using TauResourceCalculator.Infrastructure.Data.ValueConversion;
+using TauResourceCalculator.Infrastructure.Data.ValueGeneration;
 
 namespace TauResourceCalculator.Infrastructure.Data;
 
@@ -52,8 +53,10 @@ public abstract class ApplicationDbContext : DbContext
       entity.HasKey(nameof(IIdentifiable.Id));
       entity
         .Property(nameof(IIdentifiable.Id))
-          .HasValueGenerator<GuidValueGenerator>()
-          .ValueGeneratedNever();
+          .HasValueGenerator<UlidGuidValueGenerator>()
+          .ValueGeneratedNever()
+          .HasConversion<UlidGuidToBytesConverter>()
+          .HasConversion<UlidGuidToStringConverter>();
     }
   }
 

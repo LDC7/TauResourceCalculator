@@ -11,5 +11,6 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.1" />
     <PackageVersion Include="MudBlazor" Version="8.0.0" />
+    <PackageVersion Include="NUlid" Version="1.7.3" />
   </ItemGroup>
 </Project>
